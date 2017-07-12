@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SwipeBackLayout Ids -->
+    <item name="swipeback" type="id" />
+
+    <!-- LoadingDialog Ids-->
+    <item name="loading_msg" type="id" />
+
+    <!-- Topbar Ids -->
+    <item name="topbar" type="id" />
+    <item name="topbar_back_image" type="id" />
+    <item name="topbar_back" type="id" />
+    <item name="topbar_back2" type="id" />
+    <item name="topbar_title" type="id" />
+    <item name="topbar_control_one" type="id" />
+    <item name="topbar_control_two" type="id" />
+
+    <!-- Zxing Ids -->
+    <item name="auto_focus" type="id"/>
+    <item name="decode" type="id"/>
+    <item name="decode_failed" type="id"/>
+    <item name="decode_succeeded" type="id"/>
+    <item name="encode_failed" type="id"/>
+    <item name="encode_succeeded" type="id"/>
+    <item name="launch_product_query" type="id"/>
+    <item name="quit" type="id"/>
+    <item name="restart_preview" type="id"/>
+    <item name="return_scan_result" type="id"/>
+
+    <!--下拉刷新视图的控件ID-->
+    <item name="ptrFrameLayoutId" type="id"/>
+    <!--上拉加载更多视图的控件ID-->
+    <item name="autoLoadListViewId" type="id"/>
+
+
+    <item name="globalFrameLayout" type="id"/>
+    <item name="globalFrameLayout2" type="id"/>
+    <item name="dataContent_loading" type="id"/>
+    <!--<item name="dataContent_real" type="id"/>-->
+    <item name="dataContent_empty" type="id"/>
+    <item name="dataContent_empty_second" type="id"/>
+    <item name="dataContent_fail" type="id"/>
+
+    <item name="simpleGlobalFrameLayout" type="id"/>
+    <item name="swipeRefreshLayout" type="id"/>
+    <item name="recyclerView" type="id"/>
+    <item name="autoLoadListView" type="id"/>
+    <item name="ptr_listView" type="id"/>
+    <item type="id" name="ff_tag_imageLoader"></item>
+</resources>

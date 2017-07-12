@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Topbar">
+        <!--是否需要延伸到状态栏-->
+        <attr name="topbarIsExtendStatusBar" format="boolean"/>
+
+        <!--topbar整体背景色-->
+        <attr name="topbarBg" format="reference"/>
+
+        <!--左侧控件的操作模式-->
+        <attr name="topbarLeftMode" format="enum">
+            <enum name="back" value="0"/>
+            <enum name="more" value="1"/>
+        </attr>
+
+        <!--左侧控件的类型-->
+        <attr name="topbarLeftType" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="img" value="1"/>
+            <enum name="text" value="2"/>
+        </attr>
+
+        <!--右侧控件的类型-->
+        <attr name="topbarRightType" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="img" value="1"/>
+            <enum name="text" value="2"/>
+        </attr>
+
+        <attr name="topbarLeftImage" format="reference"/>
+        <attr name="topbarLeftText" format="reference|string"/>
+
+        <attr name="topbarTitleText" format="reference|string"/>
+
+        <attr name="topbarRightImage" format="reference"/>
+        <attr name="topbarRightText" format="reference|string"/>
+
+
+
+
+    </declare-styleable>
+
+
+</resources>

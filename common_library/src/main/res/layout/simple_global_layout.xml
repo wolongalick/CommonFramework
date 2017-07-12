@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/swipeRefreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.socks.autoload.AutoLoadListView
+        android:id="@id/autoLoadListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/c11"
+        android:divider="@drawable/divider"
+        android:dividerHeight="0.5px"
+        android:listSelector="@drawable/common_item_selector" />
+</android.support.v4.widget.SwipeRefreshLayout>

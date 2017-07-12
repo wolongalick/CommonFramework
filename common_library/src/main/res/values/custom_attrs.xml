@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Zxing Attrs -->
+    <declare-styleable name="ViewFinderView">
+        <attr name="longAround" format="dimension"/>
+    </declare-styleable>
+
+    <!-- Autoload Attrs -->
+    <declare-styleable name="ZSwipeItem">
+        <attr name="drag_edge" format="enum">
+            <enum name="left" value="0" />
+            <enum name="right" value="1" />
+            <enum name="top" value="2" />
+            <enum name="bottom" value="3" />
+        </attr>
+        <attr name="horizontalSwipeOffset" format="dimension" />
+        <attr name="verticalSwipeOffset" format="dimension" />
+        <attr name="show_mode" format="enum">
+            <enum name="lay_down" value="0" />
+            <enum name="pull_out" value="1" />
+        </attr>
+    </declare-styleable>
+
+    <!--XRefreshView Attrs-->
+    <declare-styleable name="XRefreshView">
+        <attr name="isHeightMatchParent" format="boolean" />
+        <attr name="isWidthMatchParent" format="boolean" />
+        <attr name="autoRefresh" format="boolean" />
+    </declare-styleable>
+
+    <!-- 日历控件:CollapseCalendar -->
+    <declare-styleable name="day">
+        <attr name="state_current" format="boolean" />
+    </declare-styleable>
+
+    <attr name="calendarViewStyle" format="reference" />
+
+    <!-- 圆形ImageView:RoundImageView -->
+    <attr name="borderRadius" format="dimension" />
+    <attr name="type">
+        <enum name="circle" value="0" />
+        <enum name="round" value="1" />
+    </attr>
+
+    <!-- 发布界面使用箭头-->
+    <declare-styleable name="Arrows">
+        <!-- 箭头颜色-->
+        <attr name="arrows_color" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="ArrowTabLayout">
+    </declare-styleable>
+
+    <declare-styleable name="ArrowLayout">
+        <!-- 箭头图片-->
+        <attr name="arrow_img" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="MaxHeightListView">
+        <attr name="max_height" format="dimension"/>
+    </declare-styleable>
+
+    
+    <declare-styleable name="CustomRatingBar">
+        <!-- 星星的总个数-->
+        <attr name="star_max_num" format="integer"/>
+        <!-- 星星的图片-->
+        <attr name="star_img" format="reference"/>
+        <!-- 星星的进度-->
+        <attr name="star_progress" format="integer"/>
+    </declare-styleable>
+
+    <declare-styleable name="SelectableRoundedImageView">
+        <attr name="sriv_left_top_corner_radius" format="dimension" />
+        <attr name="sriv_right_top_corner_radius" format="dimension" />
+        <attr name="sriv_left_bottom_corner_radius" format="dimension" />
+        <attr name="sriv_right_bottom_corner_radius" format="dimension" />
+        <attr name="sriv_border_width" format="dimension" />
+        <attr name="sriv_border_color" format="color" />
+        <attr name="sriv_oval" format="boolean" />
+        <attr name="android:scaleType" />
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+        <attr name="civ_border_width" format="dimension" />
+        <attr name="civ_border_color" format="color" />
+        <attr name="civ_border_overlay" format="boolean" />
+        <attr name="civ_fill_color" format="color" />
+    </declare-styleable>
+
+    <!--<declare-styleable name="SimpleGlobalFrameLayout">-->
+        <!--<attr name="emptyDataHint" format="string|reference"/>-->
+    <!--</declare-styleable>-->
+    <declare-styleable name="GlobalFrameLayout">
+        <attr name="globalEmptyDataImg" format="reference"/>
+        <attr name="globalEmptyDataHint" format="string|reference"/>
+        <attr name="globalEmptyDataBtnText" format="string|reference"/>
+    </declare-styleable>
+</resources>
