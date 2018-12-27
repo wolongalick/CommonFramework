@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 
 //获得屏幕相关的辅助类
 public class ScreenUtils {
+
+    public static int screenWidth;
+    public static int screenHeight;
+
+
     private ScreenUtils() {
         /* cannot be instantiated */
         throw new UnsupportedOperationException("cannot be instantiated");
@@ -23,11 +26,10 @@ public class ScreenUtils {
      * @return
      */
     public static int getScreenWidth(Context context) {
-        WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(outMetrics);
-        return outMetrics.widthPixels;
+        if(screenWidth==0){
+            screenWidth=context.getResources().getDisplayMetrics().widthPixels;
+        }
+        return screenWidth;
     }
 
     /**
@@ -37,11 +39,10 @@ public class ScreenUtils {
      * @return
      */
     public static int getScreenHeight(Context context) {
-        WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(outMetrics);
-        return outMetrics.heightPixels;
+        if(screenHeight==0){
+            screenHeight=context.getResources().getDisplayMetrics().heightPixels;
+        }
+        return screenHeight;
     }
 
     /**

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -24,165 +23,123 @@ public class NetConnectionUtils {
 
     /**
      * 判断手机当前是否联网
-     * */
-    public static boolean isNetWorkConn(Context context){
-        ConnectivityManager manager=(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo info=manager.getActiveNetworkInfo();
-        if(info!=null){
+     */
+    public static boolean isNetWorkConn(Context context) {
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = manager.getActiveNetworkInfo();
+        if (info != null) {
             return info.isConnected();
         }
         return false;
     }
 
     /**
-     * 获取网络类型
-     * @param context
-     * @return
+     * 网络类型
      */
-    public static NetWorkType getNetworkType(Context context)
-    {
-        NetWorkType strNetworkType = NetWorkType.Net_2G;
-
-        NetworkInfo networkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected())
-        {
-            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
-            {
-                strNetworkType = NetWorkType.Net_WIFI;
-            }
-            else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE)
-            {
-                String _strSubTypeName = networkInfo.getSubtypeName();
-
-                BLog.e(TAG, "Network getSubtypeName : " + _strSubTypeName);
-
-                // TD-SCDMA   networkType is 17
-                int networkType = networkInfo.getSubtype();
-                switch (networkType) {
-                    case TelephonyManager.NETWORK_TYPE_GPRS:
-                    case TelephonyManager.NETWORK_TYPE_EDGE:
-                    case TelephonyManager.NETWORK_TYPE_CDMA:
-                    case TelephonyManager.NETWORK_TYPE_1xRTT:
-                    case TelephonyManager.NETWORK_TYPE_IDEN: //api<8 : replace by 11
-                        strNetworkType = NetWorkType.Net_2G;
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_UMTS:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                    case TelephonyManager.NETWORK_TYPE_HSDPA:
-                    case TelephonyManager.NETWORK_TYPE_HSUPA:
-                    case TelephonyManager.NETWORK_TYPE_HSPA:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_B: //api<9 : replace by 14
-                    case TelephonyManager.NETWORK_TYPE_EHRPD:  //api<11 : replace by 12
-                    case TelephonyManager.NETWORK_TYPE_HSPAP:  //api<13 : replace by 15
-                        strNetworkType = NetWorkType.Net_3G;
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_LTE:    //api<11 : replace by 13
-                        strNetworkType = NetWorkType.Net_4G;
-                        break;
-                    default:
-                        // http://baike.baidu.com/item/TD-SCDMA 中国移动 联通 电信 三种3G制式
-                        if (_strSubTypeName.equalsIgnoreCase("TD-SCDMA") || _strSubTypeName.equalsIgnoreCase("WCDMA") || _strSubTypeName.equalsIgnoreCase("CDMA2000"))
-                        {
-                            strNetworkType = NetWorkType.Net_3G;
-                        }
-                        break;
-                }
-
-                BLog.e(TAG,"Network getSubtype : " + Integer.valueOf(networkType).toString());
-            }
-        }
-        BLog.e(TAG,"Network Type : " + strNetworkType);
-        return strNetworkType;
+    public static class NetWorkType {
+        public static final String NET_2G="2G";
+        public static final String NET_3G="3G";
+        public static final String NET_4G="4G";
+        public static final String NET_WIFI="WIFI";
+        public static final String NET_NONE="NONE";
     }
 
     /**
-     * 网络类型
+     * 是否处于移动网络中
+     * @param context
+     * @return
      */
-    public enum NetWorkType{
-        Net_2G,Net_3G,Net_4G,Net_WIFI
+    public static boolean isMobileNet(Context context){
+        String networkName = getNetworkName(context);
+        return NetWorkType.NET_2G.equals(networkName)
+                || NetWorkType.NET_3G.equals(networkName)
+                || NetWorkType.NET_4G.equals(networkName);
     }
+
+    /**
+     * 是否处于wifi网络中
+     * @param context
+     * @return
+     */
+    public static boolean isWifiNet(Context context){
+        return NetWorkType.NET_WIFI.equals(getNetworkName(context));
+    }
+
 
     /**
      * 获取网络名称
+     *
      * @param context
      * @return
      */
-    public static String getNetworkName(Context context)
-    {
-        String strNetworkType = "";
-
-        NetworkInfo networkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected())
-        {
-            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
-            {
-                strNetworkType = "WIFI";
-            }
-            else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE)
-            {
-                String _strSubTypeName = networkInfo.getSubtypeName();
-
-                Log.e("cocos2d-x", "Network getSubtypeName : " + _strSubTypeName);
-
-                // TD-SCDMA   networkType is 17
-                int networkType = networkInfo.getSubtype();
-                switch (networkType) {
-                    case TelephonyManager.NETWORK_TYPE_GPRS:
-                    case TelephonyManager.NETWORK_TYPE_EDGE:
-                    case TelephonyManager.NETWORK_TYPE_CDMA:
-                    case TelephonyManager.NETWORK_TYPE_1xRTT:
-                    case TelephonyManager.NETWORK_TYPE_IDEN: //api<8 : replace by 11
-                        strNetworkType = "2G";
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_UMTS:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_0:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_A:
-                    case TelephonyManager.NETWORK_TYPE_HSDPA:
-                    case TelephonyManager.NETWORK_TYPE_HSUPA:
-                    case TelephonyManager.NETWORK_TYPE_HSPA:
-                    case TelephonyManager.NETWORK_TYPE_EVDO_B: //api<9 : replace by 14
-                    case TelephonyManager.NETWORK_TYPE_EHRPD:  //api<11 : replace by 12
-                    case TelephonyManager.NETWORK_TYPE_HSPAP:  //api<13 : replace by 15
-                        strNetworkType = "3G";
-                        break;
-                    case TelephonyManager.NETWORK_TYPE_LTE:    //api<11 : replace by 13
-                        strNetworkType = "4G";
-                        break;
-                    default:
-                        // http://baike.baidu.com/item/TD-SCDMA 中国移动 联通 电信 三种3G制式
-                        if (_strSubTypeName.equalsIgnoreCase("TD-SCDMA") || _strSubTypeName.equalsIgnoreCase("WCDMA") || _strSubTypeName.equalsIgnoreCase("CDMA2000"))
-                        {
-                            strNetworkType = "3G";
-                        }
-                        else
-                        {
-                            strNetworkType = _strSubTypeName;
-                        }
-
-                        break;
-                }
-
-                BLog.e(TAG, "Network getSubtype : " + Integer.valueOf(networkType).toString());
-            }
+    public static String getNetworkName(Context context) {
+        String strNetworkType = NetWorkType.NET_NONE;
+        if(context==null){
+            return strNetworkType;
         }
 
-        BLog.e(TAG, "Network Type : " + strNetworkType);
+        try {
+            NetworkInfo networkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    strNetworkType = NetWorkType.NET_WIFI;
+                } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                    String _strSubTypeName = networkInfo.getSubtypeName();
+
+
+                    // TD-SCDMA   networkType is 17
+                    int networkType = networkInfo.getSubtype();
+                    switch (networkType) {
+                        case TelephonyManager.NETWORK_TYPE_GPRS:
+                        case TelephonyManager.NETWORK_TYPE_EDGE:
+                        case TelephonyManager.NETWORK_TYPE_CDMA:
+                        case TelephonyManager.NETWORK_TYPE_1xRTT:
+                        case TelephonyManager.NETWORK_TYPE_IDEN: //api<8 : replace by 11
+                            strNetworkType = NetWorkType.NET_2G;
+                            break;
+                        case TelephonyManager.NETWORK_TYPE_UMTS:
+                        case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                        case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                        case TelephonyManager.NETWORK_TYPE_HSDPA:
+                        case TelephonyManager.NETWORK_TYPE_HSUPA:
+                        case TelephonyManager.NETWORK_TYPE_HSPA:
+                        case TelephonyManager.NETWORK_TYPE_EVDO_B: //api<9 : replace by 14
+                        case TelephonyManager.NETWORK_TYPE_EHRPD:  //api<11 : replace by 12
+                        case TelephonyManager.NETWORK_TYPE_HSPAP:  //api<13 : replace by 15
+                            strNetworkType = NetWorkType.NET_3G;
+                            break;
+                        case TelephonyManager.NETWORK_TYPE_LTE:    //api<11 : replace by 13
+                            strNetworkType = NetWorkType.NET_4G;
+                            break;
+                        default:
+                            // http://baike.baidu.com/item/TD-SCDMA 中国移动 联通 电信 三种3G制式
+                            if (_strSubTypeName.equalsIgnoreCase("TD-SCDMA") || _strSubTypeName.equalsIgnoreCase("WCDMA") || _strSubTypeName.equalsIgnoreCase("CDMA2000")) {
+                                strNetworkType = NetWorkType.NET_3G;
+                            } else {
+                                strNetworkType = _strSubTypeName;
+                            }
+                            break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return strNetworkType;
     }
 
-    public interface INetIpListener{
+    public interface INetIpListener {
         void onGetNetIp(String ip);
     }
 
     public static void getNetIp(Context context, final INetIpListener iNetIpListener) {
-        if(!isNetWorkConn(context)){
+        if (!isNetWorkConn(context)) {
             //若没有网络则直接返回空字符串
             iNetIpListener.onGetNetIp("");
         }
 
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 String ip = "";
@@ -204,13 +161,13 @@ public class NetConnectionUtils {
                         JSONObject jsonObject = new JSONObject(retJSON.toString());
                         String code = jsonObject.getString("code");
                         if (code.equals("0")) {
-                            WanIp wanIp=JsonUtils.parseJson2Bean(retJSON.toString(), WanIp.class);
-                            BLog.i(TAG,"您的IP地址是：" + wanIp.getData().getIp());
+                            WanIp wanIp = JsonUtils.parseJson2Bean(retJSON.toString(), WanIp.class);
+                            BLog.i(TAG, "您的IP地址是：" + wanIp.getData().getIp());
 
-                            ip=wanIp.getData().getIp();
+                            ip = wanIp.getData().getIp();
                         }
-                    }else {
-                        BLog.i(TAG,"网络连接失败");
+                    } else {
+                        BLog.i(TAG, "网络连接失败");
                     }
                 } catch (Exception e) {
                     System.out.println("获取IP地址时出现异常，异常信息是：" + e.toString());

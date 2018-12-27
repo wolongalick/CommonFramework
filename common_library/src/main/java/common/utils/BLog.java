@@ -6,7 +6,7 @@ import android.util.Log;
 
 public class BLog {
 
-    public static String TAG = "CrmOA";
+    public static String TAG = "cxw_Joke";
 
     /**
      * 日志总开关
@@ -42,6 +42,11 @@ public class BLog {
             Log.v(TAG, tag + COLON + msg);
         }
     }
+    public static void v(String msg) {
+        if (rootLogOn && DEBUGI) {
+            v("", msg);
+        }
+    }
 
     public static void i(String msg) {
         if (rootLogOn && DEBUGI) {
@@ -62,13 +67,17 @@ public class BLog {
 
     public static void d(String msg) {
         if (rootLogOn && DEBUGD) {
-            Log.d("", msg);
+            d("", msg);
         }
     }
 
     public static void d(String tag, String msg) {
-        if (rootLogOn && DEBUGD) {
-            Log.d(TAG, tag + COLON + msg);
+        if (rootLogOn && DEBUGI) {
+            if (!TextUtils.isEmpty(tag)) {
+                Log.d(TAG, tag + COLON + msg);
+            } else {
+                Log.d(TAG, msg);
+            }
         }
     }
 

@@ -25,6 +25,14 @@ public class TimeUtils {
     public static final String format10 = "h:mm";
     public static final String format11 = "yyyy.MM.dd HH:mm";
     public static final String format12 = "HH:mm";
+    public static final String format13 = "H:mm:ss";
+    public static final String format14 = "yyyy-MM-dd HH：mm：ss";
+
+
+    private static final long ONE_WEEK=7*24*60*60*1000;
+    private static final long ONE_DAY=24*60*60*1000;
+    private static final long ONE_HOUR=60*60*1000;
+    private static final long ONE_MINUTE=60*1000;
 
     /**
      * 根据时间戳转换字符串时间格式
@@ -467,4 +475,96 @@ public class TimeUtils {
         return (otherCalendar.get(Calendar.AM_PM) == Calendar.AM ? "上午" : "下午")
                 + parseLongToString(time, format8);
     }
+
+    /**
+     * 获取相对时间:
+     * 7天前
+     * 1天前
+     * 1小时前
+     * 1分钟前
+     * 刚刚
+     * @param time
+     * @return
+     */
+    public static String getRelativeTime5(long time) {
+		long currentTime = System.currentTimeMillis();
+//        long currentTime = parseStringToMillis("2018-01-10 12:00:00",format1);
+
+        long diffDuration=currentTime-time;
+
+        if(diffDuration>ONE_WEEK){
+            return parseLongToString(time,format4);
+        }else if(diffDuration>=ONE_DAY){
+            return (diffDuration/ONE_DAY)+"天前";
+        }else if(diffDuration>=ONE_HOUR){
+            return (diffDuration/ONE_HOUR)+"小时前";
+        }else if(diffDuration>=ONE_MINUTE){
+            return (diffDuration/ONE_MINUTE)+"分钟前";
+        }
+        return "刚刚";
+    }
+
+    /**
+     * 注意secondL单位为秒,而不是毫秒
+     * @param secondL
+     * @return
+     */
+    public static String secToTime(long secondL) {
+       return secToTime(secondL,false);
+    }
+
+    /**
+     * 注意secondL单位为秒,而不是毫秒
+     * @param secondL
+     * @param isRemovePrefix
+     * @return
+     */
+    public static String secToTime(long secondL,boolean isRemovePrefix) {
+        int time= (int) secondL;
+        String timeStr = null;
+        int hour = 0;
+        int minute = 0;
+        int second = 0;
+        if (time <= 0)
+            return "00:00:00";
+        else {
+            minute = time / 60;
+            if (minute < 60) {
+                second = time % 60;
+                String hourStr = unitFormat(hour);
+                if(isRemovePrefix && "00".equals(hourStr)){
+                    hourStr="";
+                }else {
+                    hourStr=hourStr+ ":";
+                }
+
+                timeStr = hourStr + unitFormat(minute) + ":" + unitFormat(second);
+            } else {
+                hour = minute / 60;
+                if (hour > 99)
+                    return "99:59:59";
+                minute = minute % 60;
+                second = time - hour * 3600 - minute * 60;
+
+                String hourStr = unitFormat(hour);
+                if(isRemovePrefix && "00".equals(hourStr)){
+                    hourStr="";
+                }else {
+                    hourStr=hourStr+ ":";
+                }
+                timeStr = hourStr + unitFormat(minute) + ":" + unitFormat(second);
+            }
+        }
+        return timeStr;
+    }
+
+    public static String unitFormat(int i) {
+        String retStr = null;
+        if (i >= 0 && i < 10)
+            retStr = "0" + Integer.toString(i);
+        else
+            retStr = "" + i;
+        return retStr;
+    }
+
 }

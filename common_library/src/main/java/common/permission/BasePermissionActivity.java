@@ -1,15 +1,17 @@
 package common.permission;
 
 import android.Manifest;
-import android.app.Activity;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.PermissionChecker;
+import android.support.v7.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import common.utils.T;
 
 import static common.permission.PermissionConstant.REQUEST_CODE_CALENDAR;
 import static common.permission.PermissionConstant.REQUEST_CODE_CAMERA;
@@ -34,7 +36,8 @@ import static common.permission.PermissionConstant.REQUEST_HINT_STORAGE;
 /**
  * Created by cxw on 2016/9/2.
  */
-public abstract class BasePermissionActivity extends Activity implements OnPermissionListener, IPermission {
+public abstract class BasePermissionActivity extends AppCompatActivity implements OnPermissionListener, IPermission {
+    private Object[] params;
 
     @Override
     public void requestPermissionGroup(String... permissionNames){
@@ -42,54 +45,63 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
     }
 
     @Override
-    public void requestStorage(){
-        requestStorage(new PermissionBean(Manifest.permission.READ_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,REQUEST_HINT_STORAGE));
+    public void requestStorage(Object...params){
+        this.params=params;
+        requestStorage(new PermissionBean(Manifest.permission.WRITE_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,REQUEST_HINT_STORAGE));
     }
 
     @Override
-    public void requestCamera(){
+    public void requestCamera(Object...params){
+        this.params=params;
         requestCamera(new PermissionBean(Manifest.permission.CAMERA, REQUEST_CODE_CAMERA,REQUEST_HINT_CAMERA));
     }
 
     @Override
-    public void requestMicrophone(){
+    public void requestMicrophone(Object...params){
+        this.params=params;
         requestMicrophone(new PermissionBean(Manifest.permission.RECORD_AUDIO,REQUEST_CODE_MICROPHONE,REQUEST_HINT_MICROPHONE));
     }
 
     @Override
-    public void requestPhone(){
+    public void requestPhone(Object...params){
+        this.params=params;
         requestPhone(new PermissionBean(Manifest.permission.READ_PHONE_STATE,REQUEST_CODE_PHONE,REQUEST_HINT_PHONE));
     }
 
     @Override
-    public void requestLocation(){
+    public void requestLocation(Object...params){
+        this.params=params;
         requestLocation(new PermissionBean(Manifest.permission.ACCESS_FINE_LOCATION,REQUEST_CODE_LOCATION,REQUEST_HINT_LOCATION));
     }
 
     @Override
-    public void requestContacts(){
+    public void requestContacts(Object...params){
+        this.params=params;
         requestContacts(new PermissionBean(Manifest.permission.READ_CONTACTS,REQUEST_CODE_CONTACTS,REQUEST_HINT_CONTACTS));
     }
 
     @Override
-    public void requestCalendar(){
+    public void requestCalendar(Object...params){
+        this.params=params;
         requestCalendar(new PermissionBean(Manifest.permission.READ_CALENDAR,REQUEST_CODE_CALENDAR,REQUEST_HINT_CALENDAR));
     }
 
     @Override
-    public void requestSMS(){
+    public void requestSMS(Object...params){
+        this.params=params;
         requestSMS(new PermissionBean(Manifest.permission.READ_SMS,REQUEST_CODE_SMS,REQUEST_HINT_SMS));
     }
 
     @Override
-    public void requestSenors(){
+    public void requestSenors(Object...params){
+        this.params=params;
         requestSenors(new PermissionBean(Manifest.permission.BODY_SENSORS,REQUEST_CODE_SENORS,REQUEST_HINT_SENORS));
     }
     //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     @Override
     public void requestStorage(String hint){
-        requestStorage(new PermissionBean(Manifest.permission.READ_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,hint));
+        requestStorage(new PermissionBean(Manifest.permission.WRITE_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,hint));
     }
 
     @Override
@@ -138,7 +150,23 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @return
      */
     private boolean checkPermission(PermissionBean permissionBean){
-        return ContextCompat.checkSelfPermission(this,permissionBean.getPermissionName()) == PackageManager.PERMISSION_GRANTED;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int targetSdkVersion = 0;
+            try {
+                final PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+                targetSdkVersion = info.applicationInfo.targetSdkVersion;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            if (targetSdkVersion >= Build.VERSION_CODES.M) {
+                return ContextCompat.checkSelfPermission(this,permissionBean.getPermissionName()) == PackageManager.PERMISSION_GRANTED;
+            } else {
+                return PermissionChecker.checkSelfPermission(this, permissionBean.getPermissionName()) == PermissionChecker.PERMISSION_GRANTED;
+            }
+        }
+        //由于设备版本低于android6.0,所以权限默认是被允许的
+        return true;
     }
 
     /**
@@ -146,9 +174,9 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param permissionBean
      */
     private void showPermissionHintIfNeed(PermissionBean permissionBean){
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionBean.getPermissionName())) {
-            T.showShort(this,permissionBean.getRequetHint());
-        }
+        /*if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissionBean.getPermissionName())) {
+            T.show(this,permissionBean.getRequetHint());
+        }*/
     }
 
     /**
@@ -163,7 +191,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestStorage(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetStoragePerm(true);
+            onGetStoragePerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -172,7 +200,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestCamera(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetCameraPerm(true);
+            onGetCameraPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -181,7 +209,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestMicrophone(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetMicrophonePerm(true);
+            onGetMicrophonePerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -190,7 +218,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestPhone(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetPhonePerm(true);
+            onGetPhonePerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -199,7 +227,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestLocation(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetLocationPerm(true);
+            onGetLocationPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -208,7 +236,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestContacts(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetContactsPerm(true);
+            onGetContactsPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -217,7 +245,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestCalendar(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetCalendarPerm(true);
+            onGetCalendarPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -226,7 +254,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestSMS(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetSmsPerm(true);
+            onGetSmsPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -235,7 +263,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
     private void requestSenors(PermissionBean permissionBean){
         if (checkPermission(permissionBean)) {
-            onGetSenorsPerm(true);
+            onGetSenorsPerm(true,params);
         }else {
             showPermissionHintIfNeed(permissionBean);
             requestPermission(permissionBean);
@@ -246,7 +274,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(permissions.length>1){
             switch (requestCode){
@@ -260,34 +288,34 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
                     onGetMultPermission(result);
                     break;
             }
-        }else{
+        }else if(grantResults.length>0){
             switch (requestCode) {
                 case REQUEST_CODE_STORAGE:
-                    onGetStoragePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetStoragePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_CAMERA:
-                    onGetCameraPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetCameraPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_MICROPHONE:
-                    onGetMicrophonePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetMicrophonePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_PHONE:
-                    onGetPhonePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetPhonePerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_LOCATION:
-                    onGetLocationPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetLocationPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_CONTACTS:
-                    onGetContactsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetContactsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_CALENDAR:
-                    onGetCalendarPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetCalendarPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_SMS:
-                    onGetSmsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetSmsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
                 case REQUEST_CODE_SENORS:
-                    onGetSenorsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                    onGetSenorsPerm(grantResults[0] == PackageManager.PERMISSION_GRANTED,params);
                     break;
             }
         }
@@ -309,7 +337,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetStoragePerm(boolean isSuccessed) {
+    public void onGetStoragePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -319,7 +347,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetCameraPerm(boolean isSuccessed) {
+    public void onGetCameraPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -329,7 +357,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetMicrophonePerm(boolean isSuccessed) {
+    public void onGetMicrophonePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -339,7 +367,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetPhonePerm(boolean isSuccessed) {
+    public void onGetPhonePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -349,7 +377,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetLocationPerm(boolean isSuccessed) {
+    public void onGetLocationPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -359,7 +387,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetContactsPerm(boolean isSuccessed) {
+    public void onGetContactsPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -369,7 +397,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetCalendarPerm(boolean isSuccessed) {
+    public void onGetCalendarPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -379,7 +407,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetSmsPerm(boolean isSuccessed) {
+    public void onGetSmsPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -389,7 +417,7 @@ public abstract class BasePermissionActivity extends Activity implements OnPermi
      * @param isSuccessed
      */
     @Override
-    public void onGetSenorsPerm(boolean isSuccessed) {
+    public void onGetSenorsPerm(boolean isSuccessed,Object...params) {
 
     }
 }

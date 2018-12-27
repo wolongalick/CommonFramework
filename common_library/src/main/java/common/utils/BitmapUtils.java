@@ -7,30 +7,42 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Movie;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.View;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import static android.graphics.Bitmap.Config.ARGB_8888;
 
 public class BitmapUtils {
 
     private static final String TAG = BitmapUtils.class.getSimpleName();
 
-    public enum CropWay{
+    public enum CropWay {
         top,
         middle
     }
 
-    public enum ShowLocation{
+    public enum ShowLocation {
         top,
         middle
     }
@@ -141,47 +153,46 @@ public class BitmapUtils {
         return adjustPhotoRotation(oldBitmap, orientationDegree, ShowLocation.middle);
     }
 
-    public static Bitmap adjustPhotoRotationWithFrontCamera(Bitmap oldBitmap){
+    public static Bitmap adjustPhotoRotationWithFrontCamera(Bitmap oldBitmap) {
         int oldWidth = oldBitmap.getWidth();//1014
         int oldHeight = oldBitmap.getHeight();//579
         Matrix matrix = new Matrix();
-        matrix.setRotate(270,oldHeight/2,oldHeight/2);
+        matrix.setRotate(270, oldHeight / 2, oldHeight / 2);
 
-        matrix.postTranslate(0, oldWidth-oldHeight);
+        matrix.postTranslate(0, oldWidth - oldHeight);
 
 
-        Bitmap newBitmap = Bitmap.createBitmap(oldHeight,oldWidth,  Bitmap.Config.RGB_565);
+        Bitmap newBitmap = Bitmap.createBitmap(oldHeight, oldWidth, Bitmap.Config.RGB_565);
         Paint paint = new Paint();
         Canvas canvas = new Canvas(newBitmap);
         canvas.drawBitmap(oldBitmap, matrix, paint);
         return newBitmap;
     }
 
-    public static Bitmap adjustPhotoRotation(Bitmap oldBitmap, int orientationDegree,int x,int y){
+    public static Bitmap adjustPhotoRotation(Bitmap oldBitmap, int orientationDegree, int x, int y) {
         Matrix matrix = new Matrix();
         matrix.setRotate(orientationDegree, x, y);
 
-        Bitmap newBitmap = Bitmap.createBitmap(oldBitmap.getWidth(),oldBitmap.getHeight(),  Bitmap.Config.RGB_565);
+        Bitmap newBitmap = Bitmap.createBitmap(oldBitmap.getWidth(), oldBitmap.getHeight(), Bitmap.Config.RGB_565);
         Paint paint = new Paint();
         Canvas canvas = new Canvas(newBitmap);
         canvas.drawBitmap(oldBitmap, matrix, paint);
         return newBitmap;
     }
-
-
 
 
     /**
      * 旋转图片
+     *
      * @param oldBitmap
      * @param orientationDegree
      * @return
      */
-    public static Bitmap adjustPhotoRotation(Bitmap oldBitmap, final int orientationDegree,ShowLocation showLocation) {
+    public static Bitmap adjustPhotoRotation(Bitmap oldBitmap, final int orientationDegree, ShowLocation showLocation) {
         Matrix matrix = new Matrix();
         matrix.setRotate(orientationDegree, (float) oldBitmap.getWidth() / 2, (float) oldBitmap.getHeight() / 2);
 
-        if(showLocation==ShowLocation.top){
+        if (showLocation == ShowLocation.top) {
             float targetX, targetY;
             if (orientationDegree == 90) {
                 targetX = oldBitmap.getHeight();
@@ -198,62 +209,61 @@ public class BitmapUtils {
         }
 
 
-
-        Bitmap newBitmap = Bitmap.createBitmap(oldBitmap.getWidth(),oldBitmap.getHeight(),  Bitmap.Config.RGB_565);
+        Bitmap newBitmap = Bitmap.createBitmap(oldBitmap.getWidth(), oldBitmap.getHeight(), Bitmap.Config.RGB_565);
         Paint paint = new Paint();
         Canvas canvas = new Canvas(newBitmap);
         canvas.drawBitmap(oldBitmap, matrix, paint);
         return newBitmap;
     }
 
-    public static Bitmap adjustPhotoRotation2(Bitmap oldBitmap,final int orientationDegree){
+    public static Bitmap adjustPhotoRotation2(Bitmap oldBitmap, final int orientationDegree) {
         Matrix matrix = new Matrix();
         matrix.setRotate(orientationDegree);
         int newWidth = oldBitmap.getWidth();
         int newHeight = oldBitmap.getHeight();
-        switch (orientationDegree){
+        switch (orientationDegree) {
             case 90:
-                newWidth=oldBitmap.getHeight();
-                newHeight=oldBitmap.getWidth();
-                matrix.postTranslate(newWidth,0);
+                newWidth = oldBitmap.getHeight();
+                newHeight = oldBitmap.getWidth();
+                matrix.postTranslate(newWidth, 0);
                 break;
         }
 
-        Bitmap newBitmap = Bitmap.createBitmap(newWidth,newHeight,  Bitmap.Config.RGB_565);
+        Bitmap newBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.RGB_565);
         Paint paint = new Paint();
         Canvas canvas = new Canvas(newBitmap);
         canvas.drawBitmap(oldBitmap, matrix, paint);
         return newBitmap;
     }
 
-    public static Bitmap cropImage(Bitmap bitmap,CropWay cropWay) {
-        return cropImage(bitmap,cropWay,0,0);
+    public static Bitmap cropImage(Bitmap bitmap, CropWay cropWay) {
+        return cropImage(bitmap, cropWay, 0, 0);
     }
 
     /**
      * 按正方形裁切图片
      */
-    public static Bitmap cropImage(Bitmap bitmap,CropWay cropWay,int offsetX,int offsetY) {
+    public static Bitmap cropImage(Bitmap bitmap, CropWay cropWay, int offsetX, int offsetY) {
         int w = bitmap.getWidth(); // 得到图片的宽，高
         int h = bitmap.getHeight();
 
         int wh = w > h ? h : w;// 裁切后所取的正方形区域边长
 
-        int retX=0;
-        int retY=0;
-        switch (cropWay){
+        int retX = 0;
+        int retY = 0;
+        switch (cropWay) {
             case top:
                 //从图片左上角开始裁剪
-                retX= 0;
-                retY= 0;
+                retX = 0;
+                retY = 0;
                 break;
             case middle:
-                retX= w > h ? (w - h) / 2 : 0;//基于原图，取正方形左上角x坐标
-                retY= w > h ? 0 : (h - w) / 2;
+                retX = w > h ? (w - h) / 2 : 0;//基于原图，取正方形左上角x坐标
+                retY = w > h ? 0 : (h - w) / 2;
                 break;
         }
-        retX+=offsetX;
-        retY+=offsetY;
+        retX += offsetX;
+        retY += offsetY;
 
         //下面这句是关键
         return Bitmap.createBitmap(bitmap, retX, retY, wh, wh, null, false);
@@ -285,13 +295,13 @@ public class BitmapUtils {
         }
 
         // 其次把文件插入到系统图库
+        // 最后通知图库更新
         try {
             MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), fileName, null);
             scanFileAsync(context, file.getAbsolutePath());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        // 最后通知图库更新
     }
 
     /**
@@ -304,9 +314,15 @@ public class BitmapUtils {
      */
     public static void scanFileAsync(Context context, String filePath) {
         Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        scanIntent.setData(UriUtils.getUriCompatibleN(context,filePath));
+        scanIntent.setData(UriUtils.getUriCompatibleN(context, filePath));
         context.sendBroadcast(scanIntent);
     }
+
+    public static void scanFileAsync2(Context context, String filePath) {
+        PhotoSyncUtils photoSyncUtils = new PhotoSyncUtils();
+        photoSyncUtils.sync(context, filePath);
+    }
+
 
     /**
      * 向bitmap中心添加logo
@@ -340,7 +356,7 @@ public class BitmapUtils {
         return bitmap;//压缩好比例大小后再进行质量压缩
     }
 
-    public static Bitmap getimageFromFile(File file) {
+    public static Bitmap getImageFromFile(File file) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;//目的是只得到图片宽高
@@ -351,7 +367,7 @@ public class BitmapUtils {
         return bitmap;//压缩好比例大小后再进行质量压缩
     }
 
-    public static Bitmap getimageFromFile(String filePath) {
+    public static Bitmap getImageFromFile(String filePath) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;//目的是只得到图片宽高
@@ -363,48 +379,66 @@ public class BitmapUtils {
     }
 
 
-    @SuppressLint("NewApi")
-    public static Bitmap getimageFromFile(File file,int maxWidth,int maxHeight) {
+    public static Bitmap getImageFromFile(File file, int maxWidth, int maxHeight) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;//目的是只得到图片宽高
         Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), newOpts);//此时返回bm为空
-        calculateOptions(newOpts,maxWidth,maxHeight);
-        //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+
+        if (newOpts.outWidth> maxWidth && newOpts.outHeight > maxHeight) {
+            calculateOptions(newOpts, maxWidth, maxHeight);
+            //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+        }
         bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), newOpts);
         return bitmap;//压缩好比例大小后再进行质量压缩
     }
 
 
-    public static Bitmap createNewBitmap(File file,int maxWidth,int maxHeight){
+    public static Bitmap createNewBitmap(File file, int maxWidth, int maxHeight) {
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
         //现在主流手机比较多是640*480分辨率，所以高和宽我们设置为
         //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
-        float rate= 1;//be=1表示不缩放
-
-        int width=bitmap.getWidth();
-        int height=bitmap.getHeight();
-        if(width >= height){
-            if(width > maxWidth){
-                //缩放宽度
-                rate = (float) maxWidth/width;
-                Matrix matrix = new Matrix();
-                matrix.postScale(rate, rate);
-                return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
-            }
-        }else{
-            if(height > maxHeight){
-                //缩放高度
-                rate = (float)maxHeight/height;
-                Matrix matrix = new Matrix();
-                matrix.postScale(rate, rate);
-                return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+        float rate = 1;//be=1表示不缩放
+        if (bitmap != null) {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            if (width >= height) {
+                if (width > maxWidth) {
+                    //缩放宽度
+                    rate = (float) maxWidth / width;
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(rate, rate);
+                    return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+                }
+            } else {
+                if (height > maxHeight) {
+                    //缩放高度
+                    rate = (float) maxHeight / height;
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(rate, rate);
+                    return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
+                }
             }
         }
         return bitmap;
     }
 
+
+    // 等比缩放图片
+    public static Bitmap zoomImg(Bitmap bm, int newWidth, int newHeight) {
+        // 获得图片的宽高
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        // 计算缩放比例
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // 取得想要缩放的matrix参数
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        // 得到新的图片
+        return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);
+    }
 
     /**
      * 计算Options
@@ -431,28 +465,28 @@ public class BitmapUtils {
             inSampleSize = 1;
         options.inSampleSize = inSampleSize;//设置缩放比例
     }
-    public static void calculateOptions(BitmapFactory.Options options,int maxWidth,int maxHeight) {
+
+    public static void calculateOptions(BitmapFactory.Options options, int maxWidth, int maxHeight) {
         options.inJustDecodeBounds = false;
         int w = options.outWidth;
         int h = options.outHeight;
         //现在主流手机比较多是1280*720分辨率，所以高和宽我们设置为
-        int hh = maxWidth;
-        int ww = maxHeight;
         //缩放比。由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
         int inSampleSize = 1;//be=1表示不缩放
-        if (w > h && w > ww) {//如果宽度大的话根据宽度固定大小缩放
-            int remainder = options.outWidth % hh;//余数
-            inSampleSize = remainder==0?remainder:remainder+1;
-        } else if (w < h && h > hh) {//如果高度高的话根据宽度固定大小缩放
-            int remainder = options.outHeight % hh;//余数
-            inSampleSize = remainder==0?remainder:remainder+1;
+        if (w > h && w > maxHeight) {//如果宽度大的话根据宽度固定大小缩放
+            int remainder = options.outWidth % maxWidth;//余数
+            inSampleSize = remainder == 0 ? remainder : remainder + 1;
+        } else if (w < h && h > maxWidth) {//如果高度高的话根据宽度固定大小缩放
+            int remainder = options.outHeight % maxWidth;//余数
+            inSampleSize = remainder == 0 ? remainder : remainder + 1;
         }
-        if (inSampleSize <= 0)
+        if (inSampleSize <= 0) {
             inSampleSize = 1;
+        }
         options.inSampleSize = inSampleSize;//设置缩放比例
     }
 
-    public static Bitmap createImageThumbnail(String filePath,int newHeight,int newWidth) {
+    public static Bitmap createImageThumbnail(String filePath, int newHeight, int newWidth) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(filePath, options);
@@ -511,8 +545,8 @@ public class BitmapUtils {
             if (quality < 10) {
                 quality -= 1;//每次都减少1
             }
-            if(quality<=0){
-                quality=1;
+            if (quality <= 0) {
+                quality = 1;
             }
         }
         FileOutputStream fileOutputStream = null;
@@ -820,10 +854,10 @@ public class BitmapUtils {
 
     }
 
-    public static void saveBitmap2File(Bitmap bitmap,String fileName,CompressFormat compressFormat) {
-        File file = new File(fileName);
+    public static void saveBitmap2File(Bitmap bitmap, String filePath, CompressFormat compressFormat) {
+        File file = new File(filePath);
         boolean newFile = FileUtils.createFile(file);
-        BLog.i("保存图片结果:"+newFile);
+        BLog.i("保存图片结果:" + newFile);
 
         FileOutputStream fOut = null;
         try {
@@ -846,9 +880,118 @@ public class BitmapUtils {
         }
     }
 
-    public static void saveBitmap2File(Bitmap bitmap,String fileName) {
-        saveBitmap2File(bitmap,fileName,CompressFormat.JPEG);
+    public static void saveBitmap2File(Bitmap bitmap, String filePath) {
+        saveBitmap2File(bitmap, filePath, CompressFormat.JPEG);
+    }
+
+    public static Bitmap convertViewToBitmap(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.buildDrawingCache();  //启用DrawingCache并创建位图
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache()); //创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
+        view.setDrawingCacheEnabled(false);  //禁用DrawingCahce否则会影响性能
+        return bitmap;
+    }
+
+    public static Bitmap convertViewToBitmap2(View view) {
+        layoutView(view, ScreenUtils.getScreenWidth(view.getContext()), ScreenUtils.getScreenHeight(view.getContext()));
+        int w = view.getWidth();
+        int h = view.getHeight();
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmp);
+
+        c.drawColor(Color.WHITE);
+        /** 如果不设置canvas画布为白色，则生成透明 */
+
+        view.layout(0, 0, w, h);
+        view.draw(c);
+
+        return bmp;
+    }
+
+    //然后View和其内部的子View都具有了实际大小，也就是完成了布局，相当与添加到了界面上。接着就可以创建位图并在上面绘制了：
+    private static void layoutView(View v, int width, int height) {
+        // 指定整个View的大小 参数是左上角 和右下角的坐标
+        v.layout(0, 0, width, height);
+        int measuredWidth = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
+        int measuredHeight = View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.AT_MOST);
+        /** 当然，measure完后，并不会实际改变View的尺寸，需要调用View.layout方法去进行布局。
+         * 按示例调用layout函数后，View的大小将会变成你想要设置成的大小。
+         */
+        v.measure(measuredWidth, measuredHeight);
+        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
+    }
+
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float roundPx) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        final int color = Color.RED;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
+
     }
 
 
+    /**
+     * 获取缩略图
+     *
+     * @param imagePath:文件路径
+     * @param width:缩略图宽度
+     * @param height:缩略图高度
+     * @return
+     */
+    public static Bitmap getImageThumbnail(String imagePath, int width, int height) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true; //关于inJustDecodeBounds的作用将在下文叙述
+        BitmapFactory.decodeFile(imagePath, options);
+        int h = options.outHeight;//获取图片高度
+        int w = options.outWidth;//获取图片宽度
+        int scaleWidth = w / width; //计算宽度缩放比
+        int scaleHeight = h / height; //计算高度缩放比
+        int scale = 1;//初始缩放比
+        if (scaleWidth < scaleHeight) {//选择合适的缩放比
+            scale = scaleWidth;
+        } else {
+            scale = scaleHeight;
+        }
+        if (scale <= 0) {//判断缩放比是否符合条件
+            scale = 1;
+        }
+        options.inSampleSize = scale;
+        // 重新读入图片，读取缩放后的bitmap，注意这次要把inJustDecodeBounds 设为 false
+        options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+        // 利用ThumbnailUtils来创建缩略图，这里要指定要缩放哪个Bitmap对象
+        bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        return bitmap;
+    }
+
+    public static Bitmap loadGifFirstBitmap(File file) {
+        Bitmap bitmap = null;
+        try {
+            if (file != null && file.exists()) {
+                InputStream is = new FileInputStream(file);
+                Movie movie = Movie.decodeStream(is); //Bitmap.Config.ARGB_8888 这里是核心，如果出现图片显示不正确，就换编码试试
+                bitmap = Bitmap.createBitmap(movie.width(), movie.height(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                movie.draw(canvas, 0, 0);
+                canvas.save();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+        return bitmap;
+    }
 }

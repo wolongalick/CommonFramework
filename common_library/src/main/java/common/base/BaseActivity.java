@@ -4,14 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
 
 import com.common.R;
-import com.handmark.pulltorefresh.library.IPullToRefresh;
 import com.jaeger.library.StatusBarUtil;
 
 import common.permission.BasePermissionActivity;
 import common.ui.Topbar;
+import common.ui.datacontent.GlobalFrameLayout;
 import common.ui.datacontent.IEmptyLayout;
 import common.ui.datacontent.IFailLayout;
 import common.utils.AppStatusManager;
@@ -19,9 +19,19 @@ import common.utils.AppStatusManager;
 /**
  * Created by Alick on 2015/10/2.
  */
-public abstract class BaseActivity extends BasePermissionActivity implements IViewControl, IViewHelper {
+public abstract class BaseActivity<V extends MvpView,P extends MvpPresenter<V>> extends BasePermissionActivity implements IViewControl, IViewHelper,MvpView,MvpCallback<V,P> {
     private static final java.lang.String TAG = "BaseActivity";
-    private IRxBusHelper iRxBusHelper=new IRxBusHelperImpl();
+
+    private ActivityMvpDelegate<V,P> mvpDelegate;
+    private P presenter;
+
+    public ActivityMvpDelegate<V, P> getMvpDelegate() {
+        if(mvpDelegate==null){
+            mvpDelegate=new ActivityMvpDelegateImpl<>(this);
+        }
+        return mvpDelegate;
+    }
+
     private IViewHelper iViewHelper = new ViewHelperImpl() {
         @Override
         public <T> T getView(int id, Class<T> clazz) {
@@ -36,17 +46,34 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
 
         @Override
         public Context getContext() {
-            return BaseActivity.this;
+            return BaseActivity.this.getApplicationContext();
         }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        PushAgent.getInstance(this).onAppStart();
+        getMvpDelegate().onCreate(savedInstanceState);
 
-        initParmers();
+        /*if(presenter==null){
+            presenter=createPresenter();
+        }
+
+        if(view==null){
+            view= (V) this;
+        }
+
+        if(presenter != null){
+            presenter.attachView(view);
+        }*/
+
+        initParmers(savedInstanceState);
         initViews();
+
+        if(!isNotSetBackground()){
+            (((ViewGroup)findViewById(android.R.id.content)).getChildAt(0)).setBackgroundColor(getBackgroundColor());
+        }
+
 
         /*if (isFitsSystemWindows()) {
             ViewGroup rootView = (ViewGroup) ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
@@ -59,6 +86,10 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
         supplementParams(savedInstanceState);
 
         initValues();
+
+
+        supplementValues();
+
     }
 
     //拓展高德地图初始化需要onCreate周期的bundle
@@ -67,10 +98,46 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
     }
 
     /**
+     * 创建presenter(卡榫函数)
+     * @return
+     */
+    public P createPresenter(){
+        return presenter;
+    }
+
+    @Override
+    public P getMvpPresenter() {
+        return presenter;
+    }
+
+    @Override
+    public void setMvpPresenter(P presenter) {
+        this.presenter=presenter;
+    }
+
+    @Override
+    public V createView() {
+        return (V) this;
+    }
+
+    @Override
+    public V getMvpView() {
+        return (V) this;
+    }
+
+
+    /**
      * 补充参数(目的是在调用client端的initValues()方法前,再补充一下)
      */
     protected void supplementParams(Bundle savedInstanceState){
         //空实现,子类可以选择性重写
+    }
+
+    /**
+     * 补充控件属性值(目的是当子类调用完initValues()方法后,再补充一下)
+     */
+    public void supplementValues(){
+
     }
 
     /**
@@ -83,21 +150,41 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
         return getContext().getResources().getColor(R.color.common_broundground);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getMvpDelegate().onStart();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        getMvpDelegate().onReStart();
+    }
 
     protected void onResume() {
         super.onResume();
+        getMvpDelegate().onResume();
         AppStatusManager.getInstance().setForeground(true);
     }
 
     protected void onPause() {
         super.onPause();
+        getMvpDelegate().onPause();
         AppStatusManager.getInstance().setForeground(false);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        getMvpDelegate().onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         releaseOnDestory();
+        getMvpDelegate().onDestory();
     }
 
     /**
@@ -148,23 +235,23 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyView);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyView);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,String emptyText){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyText);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,String emptyText){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyText);
     }
 
     @Override
@@ -197,11 +284,6 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
         iViewHelper.setNavigationBarColor(activity, colorResId);
     }
 
-    @Override
-    public void initPtrText(IPullToRefresh iPullToRefresh) {
-        iViewHelper.initPtrText(iPullToRefresh);
-    }
-
     protected void initStatusNavigationBar() {
         StatusBarUtil.setTransparentForImageView(this,null);
         setNavigationBarColor(this, R.color.black);
@@ -225,33 +307,11 @@ public abstract class BaseActivity extends BasePermissionActivity implements IVi
         return true;
     }
 
-
-
     /**
-     * 增加订阅
-     *
-     * @param subscription
+     * 是否不设置背景颜色
+     * @return
      */
-    /*@Override
-    public void addSubscription(Subscription subscription) {
-        iRxBusHelper.addSubscription(subscription);
-    }*/
-
-    /**
-     * 增加订阅
-     * @param tag
-     * @param action1
-     */
-    /*@Override
-    public void addSubscription(Object tag, Action1 action1) {
-        iRxBusHelper.addSubscription(tag,action1);
-    }*/
-
-    /**
-     * 取消全部订阅
-     */
-    /*@Override
-    public void unAllSubscription() {
-        iRxBusHelper.unAllSubscription();
-    }*/
+    protected boolean isNotSetBackground(){
+        return false;
+    }
 }

@@ -13,17 +13,16 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static common.utils.CommonUtils.parseList2String;
 
 /**
  * 公共的工具类
  */
 public class CommonUtils {
 
-    private CommonUtils() {
+	private CommonUtils() {
     }
 
 	/**
@@ -67,6 +66,11 @@ public class CommonUtils {
 	public static boolean isEmptyEditText(EditText editText){
 		return TextUtils.isEmpty(editText.getText().toString().trim());
 	}
+
+	public static boolean isEmpty(String text){
+		return TextUtils.isEmpty(text) || TextUtils.isEmpty(text.trim());
+	}
+
     
     /**
 	 * 隐藏手机尾号
@@ -268,6 +272,18 @@ public class CommonUtils {
 		return pattern.matcher(str).matches();
 	}
 
+	public static String round(int number, int precision){
+		return round(String.valueOf(number),precision);
+	}
+
+	public static String round(double number, int precision){
+		return round(String.valueOf(number),precision);
+	}
+
+	public static String round(float number, int precision){
+		return round(String.valueOf(number),precision);
+	}
+
 	/**
 	 * 将字符串保留N位小数
 	 * @param str
@@ -276,6 +292,7 @@ public class CommonUtils {
      */
 	public static String round(String str, int precision){
 		String reslut = null;
+		boolean isMinus;
 		try {
 			if(str==null || "".equals(str)){
                 return "";
@@ -292,7 +309,13 @@ public class CommonUtils {
 			String format=sb.toString();
 			DecimalFormat df = new DecimalFormat(format);
 
-			reslut = df.format(Double.parseDouble(str));
+			double number = Double.parseDouble(str);
+
+			isMinus=number<0;
+
+			number=Math.abs(number);
+
+			reslut = df.format(number);
 
 			int indexOf = reslut.indexOf(".");
 
@@ -300,13 +323,17 @@ public class CommonUtils {
                 String prefix=reslut.substring(0,reslut.indexOf("."));
 
                 if(!isNumber(prefix)){
-
-                    reslut=reslut.substring(0,indexOf)+"0"+reslut.substring(indexOf,reslut.length());
+					String str1 = reslut.substring(0, indexOf);
+					String str2 = reslut.substring(indexOf, reslut.length());
+					reslut= str1 +"0"+ str2;
                 }
             }
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
-			return "";
+			return "";//-77.68
+		}
+		if(isMinus){
+			return "-"+reslut;
 		}
 
 		return reslut;
@@ -528,5 +555,93 @@ public class CommonUtils {
 		}
 	}
 
+	/**
+	 * 将字符串转换为全角
+	 * @param input
+	 * @return
+	 */
+	public static String toSBC(String input) {
+		char c[] = input.toCharArray();
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] == ' ') {
+				c[i] = '\u3000';
+			} else if (c[i] < '\177') {
+				c[i] = (char) (c[i] + 65248);
+			}
+		}
+		String s = new String(c);
+		return s;
+	}
+
+	/**
+	 * 取随机数
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public static int getRandom(int min, int max){
+		Random random = new Random();
+		int value = random.nextInt(max-min+1) + min;
+		return value;
+	}
+
+	public static String getFileSize4MB(long size) {
+		//如果字节数少于1024，则直接以B为单位，否则先除于1024，后3位因太少无意义
+		if (size < 1024) {
+			return String.valueOf(round((float)size/1024/1024,2)) + "MB";
+		} else {
+			size = size / 1024;
+		}
+		//如果原字节数除于1024之后，少于1024，则可以直接以KB作为单位
+		//因为还没有到达要使用另一个单位的时候
+		//接下去以此类推
+		if (size < 1024) {
+			return String.valueOf(round((float)size/1024,2)) + "MB";
+		} else {
+			size = size / 1024;
+		}
+		if (size < 1024) {
+			//因为如果以MB为单位的话，要保留最后1位小数，
+			//因此，把此数乘以100之后再取余
+			size = size * 100;
+			return String.valueOf((size / 100)) + "."
+					+ String.valueOf((size % 100)) + "MB";
+		} else {
+			//否则如果要以GB为单位的，先除于1024再作同样的处理
+			size = size * 100 / 1024;
+			return String.valueOf((size / 100)) + "."
+					+ String.valueOf((size % 100)) + "GB";
+		}
+
+	}
+
+	public static String getFileSize(long size) {
+		//如果字节数少于1024，则直接以B为单位，否则先除于1024，后3位因太少无意义
+		if (size < 1024) {
+			return String.valueOf(size) + "B";
+		} else {
+			size = size / 1024;
+		}
+		//如果原字节数除于1024之后，少于1024，则可以直接以KB作为单位
+		//因为还没有到达要使用另一个单位的时候
+		//接下去以此类推
+		if (size < 1024) {
+			return String.valueOf(size) + "KB";
+		} else {
+			size = size / 1024;
+		}
+		if (size < 1024) {
+			//因为如果以MB为单位的话，要保留最后1位小数，
+			//因此，把此数乘以100之后再取余
+			size = size * 100;
+			return String.valueOf((size / 100)) + "."
+					+ String.valueOf((size % 100)) + "MB";
+		} else {
+			//否则如果要以GB为单位的，先除于1024再作同样的处理
+			size = size * 100 / 1024;
+			return String.valueOf((size / 100)) + "."
+					+ String.valueOf((size % 100)) + "GB";
+		}
+	}
 
 }

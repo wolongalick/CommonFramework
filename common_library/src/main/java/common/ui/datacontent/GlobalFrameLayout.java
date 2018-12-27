@@ -18,7 +18,7 @@ import common.base.INoData;
 /**
  * Created by Alick on 2015/10/10.
  */
-public class GlobalFrameLayout extends FrameLayout implements IEmptyLayout,IFailLayout,INoData{
+public class GlobalFrameLayout extends FrameLayout implements ILoadingLayout,IEmptyLayout,IFailLayout,INoData{
     private Context context;
     private FrameLayout.LayoutParams match_parent_layoutParams =new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
 
@@ -133,9 +133,9 @@ public class GlobalFrameLayout extends FrameLayout implements IEmptyLayout,IFail
     @Override
     public void showEmptyView(){
         fl_loadingContent.setVisibility(GONE);
-        fl_emptyContent.setVisibility(VISIBLE);
         fl_failContent.setVisibility(GONE);
         fl_realContent.setVisibility(GONE);
+        fl_emptyContent.setVisibility(VISIBLE);
     }
 
     /**
@@ -206,6 +206,11 @@ public class GlobalFrameLayout extends FrameLayout implements IEmptyLayout,IFail
         fl_emptyContent.setOnClickEmptyLayoutListener(onClickEmptyLayoutListener);
     }
 
+    @Override
+    public void setLoadingGif(int gifResId) {
+        fl_loadingContent.setLoadingGif(gifResId);
+    }
+
     //========================加载失败页的方法:===============================
     @Override
     public void setOnClickReloadButton(OnClickReloadButtonListener onClickReloadButtonListener) {
@@ -226,5 +231,17 @@ public class GlobalFrameLayout extends FrameLayout implements IEmptyLayout,IFail
         initValues();
     }
 
+    //===========================get方法-begin===========================
+    public FailFrameLayout getFailContent() {
+        return fl_failContent;
+    }
 
+    public EmptyFrameLayout getEmptyContent() {
+        return fl_emptyContent;
+    }
+
+    public LoadingFrameLayout getLoadingContent() {
+        return fl_loadingContent;
+    }
+    //===========================get方法-end===========================
 }

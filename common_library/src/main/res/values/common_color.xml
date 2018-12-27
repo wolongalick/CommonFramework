@@ -5,14 +5,17 @@
     <color name="viewfinder_laser">#ffff0000</color>
     <color name="viewfinder_mask">#60000000</color>
     <color name="result_view">#b0000000</color>
-    <color name="possible_result_points">#c0ffff00</color>
+    <color name="possible_result_points">#ffff33</color>
     <color name="lightgreen">#99CC33</color>
     <color name="green">#00CC00</color>
     <color name="green_38">#22ac38</color>
     <color name="green_88">#009688</color>
     <color name="green_b9">#00dfb9</color>
     <color name="blue">#ffccddff</color>
+    <color name="blue5">#5fd4fd</color>
     <color name="c_1b1b1b">#1b1b1b</color>
+    <color name="black_33">#333333</color>
+    <color name="red_4b">#E0554B</color>
 
     <!-- Autoload Colors -->
     <color name="backgroundColor">#e8e8e0</color>
@@ -33,8 +36,10 @@
     <color name="black">#000000</color>
     <color name="orange">#ee833f</color>
     <color name="hei_89">#898989</color>
+    <color name="black_22">#222222</color>
 
     <color name="hui_e1">#e1e1e1</color>
+    <color name="hui_e5">#e5e5e5</color>
     <color name="hui_d9">#d9d9d9</color>
     <color name="hui_ba">#bababa</color>
     <color name="hui_d8">#d8d8d8</color>
@@ -47,6 +52,9 @@
     <color name="hui_f1">#f1f1f1</color>
     <color name="hei_61">#616161</color>
     <color name="hui_c5">#c5c5c5</color>
+    <color name="hui_b9">#b9b9b9</color>
+    <color name="hui_9">#999999</color>
+    <color name="hui_6">#666666</color>
 
     <!--整体色值-->
     <color name="c1">#2985E8</color>
@@ -86,10 +94,22 @@
 	<color name="divider_line">@color/c8</color>
 
     <!--界面整体背景色-->
-    <color name="common_broundground">@color/c11</color>
+    <color name="common_broundground">@color/white</color>
     <color name="empty_color">#2382ec</color>
 
-    <color name="empty_fail_hint_text_color">#333333</color>
+    <color name="empty_fail_hint_text_color">#bebebe</color>
     <color name="empty_fail_btn_color">#ffffff</color>
+
+    <color name="main_app">#ffc600</color>
+    <color name="main_app_dark">#deba05</color>
+
+    <color name="black_translucence">#2f000000</color>
+    <color name="black_translucence2">#88000000</color>
+    <color name="black_translucence3">#a5000000</color>
+    <color name="black_translucence4">#49000000</color>
+    <color name="toast_bg">#cc000000</color>
+    <color name="upload_media_bg">#d4000000</color>
+    <color name="guide_bg">#cc000000</color>
+
 
 </resources>

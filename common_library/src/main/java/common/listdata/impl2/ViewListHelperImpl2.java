@@ -1,22 +1,32 @@
 package common.listdata.impl2;
 
-import android.graphics.Rect;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.common.R;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadMoreListener;
+import com.zeropercenthappy.decorationlibrary.NormalLLRVDecoration;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
-import common.base.BasicRecyclerAdapter;
 import common.base.ViewHelperImpl;
+import common.base.adapter.BasicRecyclerAdapter;
+import common.base.viewholder.BaseViewHolder;
 import common.listdata.api2.IViewListHelper2;
-import common.ui.PullToRefreshLayout;
+import common.ui.WrapContentLinearLayoutManager;
 import common.ui.datacontent.IEmptyLayout;
 import common.ui.datacontent.IFailLayout;
 import common.ui.datacontent.SimpleGlobalFrameLayout2;
+import common.utils.DataUtils;
 import common.utils.DensityUtils;
 import common.utils.LoadDataConfig;
 
@@ -24,16 +34,18 @@ import common.utils.LoadDataConfig;
  * Created by Alick on 2016/9/25.
  */
 
-public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.ViewHolder, Adapter extends BasicRecyclerAdapter<Model, Holder>> extends ViewHelperImpl implements IViewListHelper2<Model, Holder, Adapter> {
+public abstract class ViewListHelperImpl2<Model, Holder extends BaseViewHolder, Adapter extends BasicRecyclerAdapter<Model, Holder>> extends ViewHelperImpl implements IViewListHelper2<Model, Holder, Adapter> {
     private final int pageSize = getPageSize();
     private final int firstPage = getFirstPage();
+
+
 
     private int pageNum = LoadDataConfig.DEFAULT_FIRST_PAGE;
     private List<Model> allDataList;
     private Adapter adapter;
 
-    private PullToRefreshLayout prl;
     protected SimpleGlobalFrameLayout2 simpleGlobalFrameLayout2;
+    protected SmartRefreshLayout smartRefreshLayout;
     protected RecyclerView recyclerView;
 
     /**
@@ -41,10 +53,15 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
      */
     @Override
     public void initListData() {
-        Class<Adapter> entityClass = (Class<Adapter>) ((ParameterizedType) getViewClass().getGenericSuperclass()).getActualTypeArguments()[2];
+        Type genericSuperclass = getViewClass().getGenericSuperclass();
+        ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+        Type type = parameterizedType.getActualTypeArguments()[2];
+        Class<Adapter> entityClass = (Class<Adapter>) type;
         Constructor<?>[] constructors = entityClass.getConstructors();
         try {
+            allDataList=new ArrayList<>();
             adapter = (Adapter) constructors[0].newInstance(allDataList);
+            adapter.setPageSize(pageSize);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -55,14 +72,13 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
     }
 
     protected void initListener() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(adapter);
 
         if (!isCustomItemDecoration()) {
             //如果不需要自定义则使用默认的分割线
             addDefaultItemDecoration();
         }
-
 
         simpleGlobalFrameLayout2.setOnClickReloadButton(new IFailLayout.OnClickReloadButtonListener() {
             @Override
@@ -71,47 +87,33 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
             }
         });
 
-        simpleGlobalFrameLayout2.setOnClickEmptyLayoutListener(new IEmptyLayout.OnClickEmptyLayoutListener() {
+        simpleGlobalFrameLayout2.setOnClickEmptyLayoutListener( new IEmptyLayout.OnClickEmptyLayoutListener() {
             @Override
             public void onClick(View v) {
                 onClickEmptyBtn();
             }
         });
 
-        prl = PullToRefreshLayout.supportPull(recyclerView, new PullToRefreshLayout.OnRefreshListener() {
+        smartRefreshLayout.setOnRefreshLoadMoreListener(new OnRefreshLoadMoreListener() {
             @Override
-            public void onRefresh(PullToRefreshLayout pullToRefreshLayout) {
+            public void onRefresh(@NonNull RefreshLayout refreshLayout) {
                 pageNum = firstPage;
                 //明确指出:调用本类(实际是子类)的onRefresh()方法
-                ViewListHelperImpl2.this.onRefresh();
+                ViewListHelperImpl2.this.onRefresh(); //refresh data here
             }
 
             @Override
-            public void onLoadMore(PullToRefreshLayout pullToRefreshLayout) {
-//                pageNum++;
+            public void onLoadMore(@NonNull RefreshLayout refreshLayout) {
                 ViewListHelperImpl2.this.onLoadMore(pageNum);
             }
         });
-        prl.setDoPullDown(true);
-        prl.setDoPullUp(!isDisableLoadMore());
     }
 
     /**
      * 添加默认分割线
      */
     private void addDefaultItemDecoration() {
-        final int dividerLineHeight = DensityUtils.dp2px(getContext(),0.5f);
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                if (parent.getChildAdapterPosition(view) == 0) {
-                    outRect.set(0, dividerLineHeight, 0, dividerLineHeight);
-                } else {
-                    outRect.set(0, 0, 0, dividerLineHeight);
-                }
-            }
-        });
+        recyclerView.addItemDecoration(new NormalLLRVDecoration(DensityUtils.dp2px(getContext(),12),getContext().getResources().getDrawable(R.drawable.divider_list_grey_12dp)));
     }
 
 
@@ -122,24 +124,35 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
      */
     @Override
     public void updateData(List<Model> dataList) {
+        updateData(dataList,false);
+    }
+
+    @Override
+    public void updateData(List<Model> dataList,boolean isWithoutAnimation) {
         int size = dataList != null ? dataList.size() : 0;
+        //无论此时是刷新结束还是加载更多结束,都要重置swipeRefreshLayout的位置
         //1.下拉刷新
         if (pageNum == firstPage) {
+            smartRefreshLayout.finishRefresh();
             //设置刷新成功
-            prl.refreshFinish(PullToRefreshLayout.SUCCEED);
+//            prl.refreshFinish(PullToRefreshLayout.SUCCEED);
             if (size == 0) {
-                //1.1.无数据显示空页面
-                showEmptyView();
+                if(getAdapter().isSupportHeader()){
+                    allDataList = dataList;
+                    updateListView(true, size,isWithoutAnimation);
+                }else {
+                    //1.1.无数据显示空页面
+                    showEmptyView();
+                }
             } else {
-//                allDataList.clear();
-//                allDataList.addAll(dataList);
                 allDataList = dataList;
-                updateListView(true, size);
+                updateListView(true, size,isWithoutAnimation);
             }
+
             //2.加载更多
         } else {
             allDataList.addAll(dataList);
-            updateListView(false, size);
+            updateListView(false, size,isWithoutAnimation);
         }
     }
 
@@ -150,18 +163,13 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
     public void updateEmptyData() {
         //1.下拉刷新
         if (pageNum == firstPage) {
-            prl.refreshFinish(PullToRefreshLayout.FAIL);
-            if (allDataList == null) {
+            smartRefreshLayout.finishRefresh();
+            if (DataUtils.isEmpty(allDataList)) {
                 showFailView();
-            } else if (allDataList.isEmpty()) {
-                //1.1.无数据显示空页面
-                showEmptyView();
-            } else {
-                showRealView();
             }
             //2.加载更多
         } else {
-            prl.loadmoreFinish(PullToRefreshLayout.FAIL);
+            smartRefreshLayout.finishLoadMore(LoadDataConfig.LOAD_MORE_FAIL_DELAY,false,false);
         }
     }
 
@@ -190,9 +198,23 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
         return simpleGlobalFrameLayout2;
     }
 
+
+    public SmartRefreshLayout getRefreshLayout() {
+        return smartRefreshLayout;
+    }
+
     @Override
     public RecyclerView getRecyclerView() {
         return recyclerView;
+    }
+
+    /**
+     * 更新列表
+     * @param isRefresh
+     * @param size
+     */
+    private void updateListView(boolean isRefresh, int size) {
+        updateListView(isRefresh,size,false);
     }
 
     /**
@@ -201,33 +223,34 @@ public abstract class ViewListHelperImpl2<Model, Holder extends RecyclerView.Vie
      * @param isRefresh
      * @param size
      */
-    private void updateListView(boolean isRefresh, int size) {
+    private void updateListView(boolean isRefresh, int size,boolean isWithoutAnimation) {
         adapter.setData(allDataList);
         adapter.notifyDataSetChanged();
+        pageNum++;
 
-        //是否由client端决定是否为最后一页
-        if (isLastPageDependClient()) {
-            //1.是由client端决定
-            if (isLastPage()) {
-                prl.loadmoreFinish(PullToRefreshLayout.NO_DATA_SUCCEED);
-            } else {
-                prl.loadmoreFinish(PullToRefreshLayout.SUCCEED);
-                pageNum++;
-            }
-        } else {
-            //2.不是由client端决定,那么采用默认逻辑:当次获取的数据量小于请求的量,则认为是最后一页
-            if (size < pageSize) {
-                prl.loadmoreFinish(PullToRefreshLayout.NO_DATA_SUCCEED);
-            } else {
-                prl.loadmoreFinish(PullToRefreshLayout.SUCCEED);
-                pageNum++;
+        if(isRefresh){
+            //刷新完成
+            smartRefreshLayout.finishRefresh();
+        }else {
+            if(size < pageSize){
+                //加载更多完成(没有更多数据了)
+                smartRefreshLayout.finishLoadMoreWithNoMoreData();
+            }else {
+                //加载更多完成
+                smartRefreshLayout.finishLoadMore();
             }
         }
 
-        if (isRefresh) {
-            showRealView();
-        } else {
+        if(isWithoutAnimation){
             showRealViewWithoutAnimation();
+        }else {
+            if (isRefresh) {
+                showRealView();
+            } else {
+                showRealViewWithoutAnimation();
+            }
         }
+
+
     }
 }

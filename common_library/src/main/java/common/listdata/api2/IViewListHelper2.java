@@ -1,28 +1,29 @@
 package common.listdata.api2;
 
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 
-import com.socks.autoload.AutoLoadListView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 
 import java.util.List;
 
-import common.base.BasicRecyclerAdapter;
 import common.base.IViewHelper;
-import common.ui.datacontent.SimpleGlobalFrameLayout;
+import common.base.adapter.BasicRecyclerAdapter;
+import common.base.viewholder.BaseViewHolder;
 import common.ui.datacontent.SimpleGlobalFrameLayout2;
 
 /**
  * Created by Alick on 2016/9/25.
  */
 
-public interface IViewListHelper2<Model,Holder extends RecyclerView.ViewHolder, Adapter extends BasicRecyclerAdapter<Model, Holder>> extends IViewHelper {
+public interface IViewListHelper2<Model,Holder extends BaseViewHolder, Adapter extends BasicRecyclerAdapter<Model, Holder>> extends IViewHelper {
     /**
      * 更新列表数据
      *
      * @param dataList
      */
     void updateData(List<Model> dataList);
+
+    void updateData(List<Model> dataList,boolean isWithoutAnimation);
 
     /**
      * 更新列表空数据
@@ -133,10 +134,15 @@ public interface IViewListHelper2<Model,Holder extends RecyclerView.ViewHolder, 
     SimpleGlobalFrameLayout2 getSimpleGlobalFrameLayout2();
 
     /**
+     * 获取SmartRefreshLayout
+     * @return
+     */
+    SmartRefreshLayout getRefreshLayout();
+
+    /**
      * 获取RecyclerView
      * @return
      */
     RecyclerView getRecyclerView();
-
 
 }

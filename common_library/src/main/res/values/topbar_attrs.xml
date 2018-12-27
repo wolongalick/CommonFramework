@@ -3,9 +3,15 @@
     <declare-styleable name="Topbar">
         <!--是否需要延伸到状态栏-->
         <attr name="topbarIsExtendStatusBar" format="boolean"/>
+        <!--状态栏是否使用标题栏的背景-->
+        <attr name="statusBarAsTopbarBg" format="boolean"/>
+
+        <attr name="topbarTextColor" format="color|reference"/>
 
         <!--topbar整体背景色-->
         <attr name="topbarBg" format="reference"/>
+        <!--状态栏背景-->
+        <attr name="statusBarBg" format="reference"/>
 
         <!--左侧控件的操作模式-->
         <attr name="topbarLeftMode" format="enum">
@@ -19,6 +25,17 @@
             <enum name="img" value="1"/>
             <enum name="text" value="2"/>
         </attr>
+
+        <!--中间标题控件的类型-->
+        <attr name="topbarTitleType" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="img" value="1"/>
+            <enum name="text" value="2"/>
+            <enum name="anim" value="3"/>
+
+        </attr>
+        <attr name="topbarTitleImage" format="reference"/>
+
 
         <!--右侧控件的类型-->
         <attr name="topbarRightType" format="enum">

@@ -11,15 +11,14 @@
         android:id="@+id/statusBarView"
         android:layout_width="match_parent"
         android:layout_height="24dp"
-        android:background="#ff0000" />
+        android:background="#000000" />
 
     <!--标题栏:左上角,中间,右上角-->
     <RelativeLayout
         android:id="@+id/rl_title"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:background="#993fa1"
-        android:orientation="horizontal">
+        android:layout_height="@dimen/topbar_height"
+        android:background="#993fa1">
 
         <LinearLayout
             android:id="@+id/ll_leftOption"
@@ -31,31 +30,48 @@
                 android:id="@+id/iv_left"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="#0000ff"
-                android:scaleType="fitXY"
-                android:src="@drawable/back_white" />
+                android:paddingLeft="@dimen/topbar_spacing"
+                android:paddingRight="@dimen/topbar_spacing"
+                android:scaleType="centerInside" />
 
             <TextView
                 android:id="@+id/tv_left"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
+                android:paddingLeft="@dimen/topbar_spacing"
+                android:paddingRight="@dimen/topbar_spacing"
                 android:text="选项"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_title"
+        <LinearLayout
+            android:id="@+id/ll_title"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_centerInParent="true"
-            android:text="标题"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:textSize="16sp" />
+            >
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="标题"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/iv_arrow_down"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/arrow_down"
+                android:layout_marginLeft="5dp"
+                android:visibility="visible"
+                />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/ll_rightOption"
@@ -68,17 +84,17 @@
                 android:id="@+id/iv_right"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:background="#0000ff"
-                android:scaleType="fitXY"
-                android:src="@drawable/back_white" />
+                android:paddingLeft="@dimen/topbar_spacing"
+                android:paddingRight="@dimen/topbar_spacing"
+                android:scaleType="centerInside" />
 
             <TextView
                 android:id="@+id/tv_right"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
+                android:paddingLeft="@dimen/topbar_spacing"
+                android:paddingRight="@dimen/topbar_spacing"
                 android:text="选项"
                 android:textColor="@color/white"
                 android:textSize="16sp" />

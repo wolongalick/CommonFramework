@@ -6,21 +6,29 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.common.R;
-import com.handmark.pulltorefresh.library.IPullToRefresh;
 
 import common.permission.BasePermissionFragment_v4;
 import common.ui.Topbar;
+import common.ui.datacontent.GlobalFrameLayout;
 import common.ui.datacontent.IEmptyLayout;
 import common.ui.datacontent.IFailLayout;
 
 /**
  * Created by Alick on 2015/10/2.
  */
-public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implements IViewControl,IViewHelper{
-    private IRxBusHelper iRxBusHelper=new IRxBusHelperImpl();
+public abstract class BaseFragment_v4<V extends MvpView,P extends MvpPresenter<V>> extends BasePermissionFragment_v4 implements IViewControl,IFragmentControl,IViewHelper,MvpView,MvpCallback<V,P>{
+
+    private P presenter;
+    private FragmentMvpDelegate<V,P> fragment_MvpDelegate;
+
+    public FragmentMvpDelegate<V, P> getMvpDelegate() {
+        if(fragment_MvpDelegate ==null){
+            fragment_MvpDelegate =new FragmentMvpDelegateImpl<>(this);
+        }
+        return fragment_MvpDelegate;
+    }
 
     private IViewHelper iViewHelper =new ViewHelperImpl(){
         @Override
@@ -36,35 +44,22 @@ public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implemen
 
         @Override
         public Context getContext() {
-            return getHostActivity();
+            Activity hostActivity = BaseFragment_v4.super.getHostActivity();
+            return hostActivity!=null ? hostActivity.getApplicationContext() : null;
         }
     };
     //Fragment布局View
     protected View rootView;
-    private LayoutInflater inflater;
-    private Activity activity;
-
-
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        activity =  getActivity();
-        inflater = LayoutInflater.from(context);
-    }
-
-    public Activity getHostActivity() {
-        if(activity ==null){
-            activity =getActivity();
-        }
-        return activity;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        initParmers();
+        getMvpDelegate().onCreateView();
+
+
+        initParmers(savedInstanceState);
+        this.rootView = inflater.inflate(getLayoutId(), container,false);
+        rootView.setBackgroundColor(getBackgroundColor());
         initViews();
-        extraOverrideAMapOnCreate(savedInstanceState);
         return rootView;
     }
 
@@ -74,31 +69,41 @@ public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implemen
         initValues();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        getMvpDelegate().onStart();
+    }
+
     public void onResume() {
         super.onResume();
+        getMvpDelegate().onResume();
 //        MobclickAgent.onPageStart(this.getClass().getSimpleName()); //统计页面
     }
     public void onPause() {
         super.onPause();
+        getMvpDelegate().onPause();
 //        MobclickAgent.onPageEnd(this.getClass().getSimpleName());
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getMvpDelegate().onStop();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        iRxBusHelper.unAllSubscription();
-        releaseOnDestory();
+        getMvpDelegate().onDestory();
     }
 
-    //拓展高德地图初始化需要onCreate周期的bundle
-    public void extraOverrideAMapOnCreate(Bundle bundle){
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
+    /**
+     * 创建presenter(卡榫函数)
+     * @return
+     */
+    public abstract P createPresenter();
 
     /**
      * 获得Topbar
@@ -149,24 +154,23 @@ public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implemen
 
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener, IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyView);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyView);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
-        String emptyText){
-        iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyText);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,String emptyText){
+        return iViewHelper.initGlobalFrameLayout(onClickReloadButtonListener,emptyText);
     }
 
     @Override
@@ -199,25 +203,6 @@ public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implemen
         iViewHelper.setNavigationBarColor(activity, colorResId);
     }
 
-    @Override
-    public void initPtrText(IPullToRefresh iPullToRefresh) {
-        iViewHelper.initPtrText(iPullToRefresh);
-    }
-
-    //==========BaseFragment自己特有的方法---begin==========
-
-    /**
-     * 设置Fragment布局
-     *
-     * @param layoutId
-     * @return
-     */
-    public final View inject(int layoutId) {
-        this.rootView = inflater.inflate(layoutId, null);
-        rootView.setBackgroundColor(getBackgroundColor());
-        return rootView;
-    }
-
     /**
      * 获取背景色
      * @return
@@ -227,34 +212,22 @@ public abstract class BaseFragment_v4 extends BasePermissionFragment_v4 implemen
         return getContext().getResources().getColor(R.color.common_broundground);
     }
 
-    /**
-     * 增加订阅
-     *
-     * @param subscription
-     */
-    /*@Override
-    public void addSubscription(Subscription subscription) {
-        iRxBusHelper.addSubscription(subscription);
-    }*/
+    public P getMvpPresenter() {
+        return presenter;
+    }
 
-    /**
-     * 增加订阅
-     * @param tag
-     * @param action1
-     */
-    /*@Override
-    public void addSubscription(Object tag, Action1 action1) {
-        iRxBusHelper.addSubscription(tag,action1);
-    }*/
+    @Override
+    public void setMvpPresenter(P presenter) {
+        this.presenter=presenter;
+    }
 
-    /**
-     * 取消全部订阅
-     */
-    /*@Override
-    public void unAllSubscription() {
-        iRxBusHelper.unAllSubscription();
-    }*/
+    @Override
+    public V createView() {
+        return (V) this;
+    }
 
-
-    //==========BaseFragment自己特有的方法---end==========
+    @Override
+    public V getMvpView() {
+        return (V) this;
+    }
 }

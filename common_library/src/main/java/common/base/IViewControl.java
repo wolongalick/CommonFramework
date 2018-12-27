@@ -1,5 +1,7 @@
 package common.base;
 
+import android.os.Bundle;
+
 /**
  * 视图的流程控制接口
  * Created by Alick on 2015/10/8.
@@ -7,8 +9,9 @@ package common.base;
 public interface IViewControl {
     /**
      * 初始化变量
+     * @param savedInstanceState
      */
-    void initParmers();
+    void initParmers(Bundle savedInstanceState);
 
     /**
      * 初始化页面控件

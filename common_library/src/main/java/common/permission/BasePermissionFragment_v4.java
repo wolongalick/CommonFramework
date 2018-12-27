@@ -1,6 +1,8 @@
 package common.permission;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -37,6 +39,20 @@ import static common.permission.PermissionConstant.REQUEST_HINT_STORAGE;
  */
 
 public class BasePermissionFragment_v4 extends Fragment implements OnPermissionListener,IPermission {
+    private Activity activity;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        activity =  getActivity();
+    }
+
+    public Activity getHostActivity() {
+        if(activity ==null){
+            activity =getActivity();
+        }
+        return activity;
+    }
 
     @Override
     public void requestPermissionGroup(String... permissionNames) {
@@ -54,53 +70,53 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
 
 
     @Override
-    public void requestStorage(){
-        requestStorage(new PermissionBean(Manifest.permission.READ_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,REQUEST_HINT_STORAGE));
+    public void requestStorage(Object...params){
+        requestStorage(new PermissionBean(Manifest.permission.WRITE_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,REQUEST_HINT_STORAGE));
     }
 
     @Override
-    public void requestCamera(){
+    public void requestCamera(Object...params){
         requestCamera(new PermissionBean(Manifest.permission.CAMERA, REQUEST_CODE_CAMERA,REQUEST_HINT_CAMERA));
     }
 
     @Override
-    public void requestMicrophone(){
+    public void requestMicrophone(Object...params){
         requestMicrophone(new PermissionBean(Manifest.permission.RECORD_AUDIO,REQUEST_CODE_MICROPHONE,REQUEST_HINT_MICROPHONE));
     }
 
     @Override
-    public void requestPhone(){
+    public void requestPhone(Object...params){
         requestPhone(new PermissionBean(Manifest.permission.READ_PHONE_STATE,REQUEST_CODE_PHONE,REQUEST_HINT_PHONE));
     }
 
     @Override
-    public void requestLocation(){
+    public void requestLocation(Object...params){
         requestLocation(new PermissionBean(Manifest.permission.ACCESS_FINE_LOCATION,REQUEST_CODE_LOCATION,REQUEST_HINT_LOCATION));
     }
 
     @Override
-    public void requestContacts(){
+    public void requestContacts(Object...params){
         requestContacts(new PermissionBean(Manifest.permission.READ_CONTACTS,REQUEST_CODE_CONTACTS,REQUEST_HINT_CONTACTS));
     }
 
     @Override
-    public void requestCalendar(){
+    public void requestCalendar(Object...params){
         requestCalendar(new PermissionBean(Manifest.permission.READ_CALENDAR,REQUEST_CODE_CALENDAR,REQUEST_HINT_CALENDAR));
     }
 
     @Override
-    public void requestSMS(){
+    public void requestSMS(Object...params){
         requestSMS(new PermissionBean(Manifest.permission.READ_SMS,REQUEST_CODE_SMS,REQUEST_HINT_SMS));
     }
 
     @Override
-    public void requestSenors(){
+    public void requestSenors(Object...params){
         requestSenors(new PermissionBean(Manifest.permission.BODY_SENSORS,REQUEST_CODE_SENORS,REQUEST_HINT_SENORS));
     }
 
     @Override
     public void requestStorage(String hint){
-        requestStorage(new PermissionBean(Manifest.permission.READ_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,hint));
+        requestStorage(new PermissionBean(Manifest.permission.WRITE_EXTERNAL_STORAGE,REQUEST_CODE_STORAGE,hint));
     }
 
     @Override
@@ -158,8 +174,8 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param permissionBean
      */
     private void showPermissionHintIfNeed(PermissionBean permissionBean){
-        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), permissionBean.getPermissionName())) {
-            T.showShort(getContext(),permissionBean.getRequetHint());
+        if (ActivityCompat.shouldShowRequestPermissionRationale(getHostActivity(), permissionBean.getPermissionName())) {
+            T.show(getHostActivity(),permissionBean.getRequetHint());
         }
     }
 
@@ -272,7 +288,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetStoragePerm(boolean isSuccessed) {
+    public void onGetStoragePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -282,7 +298,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetCameraPerm(boolean isSuccessed) {
+    public void onGetCameraPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -292,7 +308,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetMicrophonePerm(boolean isSuccessed) {
+    public void onGetMicrophonePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -302,7 +318,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetPhonePerm(boolean isSuccessed) {
+    public void onGetPhonePerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -312,7 +328,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetLocationPerm(boolean isSuccessed) {
+    public void onGetLocationPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -322,7 +338,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetContactsPerm(boolean isSuccessed) {
+    public void onGetContactsPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -332,7 +348,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetCalendarPerm(boolean isSuccessed) {
+    public void onGetCalendarPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -342,7 +358,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetSmsPerm(boolean isSuccessed) {
+    public void onGetSmsPerm(boolean isSuccessed,Object...params) {
 
     }
 
@@ -352,7 +368,7 @@ public class BasePermissionFragment_v4 extends Fragment implements OnPermissionL
      * @param isSuccessed
      */
     @Override
-    public void onGetSenorsPerm(boolean isSuccessed) {
+    public void onGetSenorsPerm(boolean isSuccessed,Object...params) {
 
     }
 

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
-import common.utils.BLog;
-
 public class ViewPagerFixed extends android.support.v4.view.ViewPager {
 
     public ViewPagerFixed(Context context) {
@@ -22,6 +20,8 @@ public class ViewPagerFixed extends android.support.v4.view.ViewPager {
             return super.onTouchEvent(ev);
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
         }
         return false;
     }
@@ -31,8 +31,9 @@ public class ViewPagerFixed extends android.support.v4.view.ViewPager {
         try {
             return super.onInterceptTouchEvent(ev);
         } catch (IllegalArgumentException ex) {
-//            ex.printStackTrace();
-            BLog.w("java.lang.IllegalArgumentException: pointerIndex out of range--->ViewPagerFixed");
+            ex.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e){
+            e.printStackTrace();
         }
         return false;
     }

@@ -5,11 +5,8 @@ import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import com.common.R;
-import com.handmark.pulltorefresh.library.ILoadingLayout;
-import com.handmark.pulltorefresh.library.IPullToRefresh;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import java.util.HashMap;
@@ -61,39 +58,43 @@ public abstract class ViewHelperImpl implements IViewHelper {
         }
     }
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
-        findGlobalFrameLayout(onClickReloadButtonListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener){
+        return findGlobalFrameLayout(onClickReloadButtonListener);
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
-        findGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener){
+        return findGlobalFrameLayout(onClickReloadButtonListener,onClickEmptyLayoutListener);
     }
 
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,View emptyView){
         findGlobalFrameLayout(onClickReloadButtonListener);
         globalFrameLayout.setEmptyView(emptyView);
+        return globalFrameLayout;
     }
 
     @Override
-    public void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
+    public GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
         String emptyText){
         findGlobalFrameLayout(onClickReloadButtonListener);
         globalFrameLayout.setEmptyText(emptyText);
+        return globalFrameLayout;
     }
 
 
-    private void findGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener) {
+    private GlobalFrameLayout findGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener) {
         globalFrameLayout=getView(R.id.globalFrameLayout,GlobalFrameLayout.class);
         globalFrameLayout.setOnClickReloadButton(onClickReloadButtonListener);
+        return globalFrameLayout;
     }
 
-    private void findGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener) {
+    private GlobalFrameLayout findGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener) {
         globalFrameLayout=getView(R.id.globalFrameLayout,GlobalFrameLayout.class);
         globalFrameLayout.setOnClickReloadButton(onClickReloadButtonListener);
         globalFrameLayout.setOnClickEmptyLayoutListener(onClickEmptyLayoutListener);
+        return globalFrameLayout;
     }
 
     @Override
@@ -122,7 +123,8 @@ public abstract class ViewHelperImpl implements IViewHelper {
 
     @Override
     public void showRealViewWithoutAnimation() {
-
+        globalFrameLayout=getView(R.id.globalFrameLayout,GlobalFrameLayout.class);
+        globalFrameLayout.showRealViewWithoutAnimation();
     }
 
     @Override
@@ -141,15 +143,4 @@ public abstract class ViewHelperImpl implements IViewHelper {
         }
     }
 
-    public void initPtrText(IPullToRefresh iPullToRefresh){
-        ILoadingLayout startLabels = iPullToRefresh.getLoadingLayoutProxy(true, false);
-        startLabels.setPullLabel("下拉刷新...");
-        startLabels.setReleaseLabel("放开刷新...");
-        startLabels.setRefreshingLabel("正在刷新...");
-
-        ILoadingLayout endLabels = iPullToRefresh.getLoadingLayoutProxy(false, true);
-        endLabels.setPullLabel("上拉加载更多...");
-        endLabels.setReleaseLabel("放开加载...");
-        endLabels.setRefreshingLabel("正在加载...");
-    }
 }

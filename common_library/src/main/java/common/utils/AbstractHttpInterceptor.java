@@ -21,12 +21,12 @@ import okio.BufferedSource;
 
 public abstract class AbstractHttpInterceptor implements Interceptor {
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    private boolean enableDebug;
+//    private boolean enableDebug;
 
     private java.lang.String TAG = "AbstractHttpInterceptor";
 
-    public AbstractHttpInterceptor(boolean enableDebug) {
-        this.enableDebug = enableDebug;
+    public AbstractHttpInterceptor() {
+//        this.enableDebug = enableDebug;
     }
 
 
@@ -44,7 +44,7 @@ public abstract class AbstractHttpInterceptor implements Interceptor {
 
         RequestBody requestBody = request.body();
 
-        if (enableDebug) {
+        if (BLog.rootLogOn) {
             Headers headers = request.headers();
             int headerSize = headers.size();
             BLog.i("-----请求头-----");
@@ -104,14 +104,6 @@ public abstract class AbstractHttpInterceptor implements Interceptor {
     }
 
      /*========================set/get方法-begin========================*/
-
-    public void setEnableDebug(boolean enableDebug) {
-        this.enableDebug = enableDebug;
-    }
-
-    public boolean isEnableDebug() {
-        return enableDebug;
-    }
 
     /*========================set/get方法-end========================*/
 }

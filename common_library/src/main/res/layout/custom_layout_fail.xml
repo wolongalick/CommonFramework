@@ -5,31 +5,32 @@
     android:background="@color/common_broundground">
 
     <LinearLayout
+        android:id="@+id/ll_loadFailed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
         android:layout_gravity="center"
-        android:layout_marginBottom="40dp"
         >
 
         <ImageView
             android:id="@+id/iv_fail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/net_error"
+            android:src="@drawable/error_reloading"
             android:scaleType="center"
             />
 
         <TextView
-            android:layout_marginTop="27dp"
+            android:layout_marginTop="6dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="数据加载失败\n请确保你的手机已经联网"
+            android:text="点我一下试试"
             android:gravity="center"
             android:lineSpacingExtra="15dp"
-            android:textSize="18sp"
+            android:textSize="12sp"
             android:textColor="@color/empty_fail_hint_text_color"
+            android:visibility="visible"
             />
 
         <TextView
@@ -41,6 +42,7 @@
             android:textColor="@color/empty_fail_btn_color"
             android:text="重新加载"
             android:gravity="center"
+            android:visibility="gone"
             />
     </LinearLayout>
 

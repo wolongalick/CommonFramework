@@ -8,6 +8,8 @@ import java.util.List;
  * Created by cxw on 2017/3/1.
  */
 public class DataUtils {
+    private static final java.lang.String TAG = "DataUtils";
+
     public interface FilterCallback<E>{
         /**
          * 是否需要移除
@@ -24,10 +26,16 @@ public class DataUtils {
      * @param <E>
      */
     public static <E> void filterList(List<E> list,FilterCallback<E> filterCallback){
-        for (int i = 0; i < list.size(); i++) {
+        if(list==null){
+            BLog.e(TAG,"list为null");
+            return;
+        }
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
             if(filterCallback.isNeedRemove(list.get(i))){
                 list.remove(i);
                 i--;
+                size--;
             }
         }
     }
@@ -40,5 +48,6 @@ public class DataUtils {
     public static boolean isEmpty(Collection collection){
         return collection==null || collection.isEmpty();
     }
+
 
 }

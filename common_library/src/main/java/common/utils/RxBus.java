@@ -1,90 +1,123 @@
 package common.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 /**
- * Created by lhj on 2016/8/18.
+ * 功能:
+ * 作者: 崔兴旺
+ * 日期: 2018/3/9
+ * 备注:
  */
 public class RxBus {
 
 
-    private final HashMap<Object, List<Subject>> rxMap;
+    private Subject<Object> bus;
+    private static RxBus instance = null;
 
     private RxBus() {
-        rxMap = new HashMap<>();
+        bus = PublishSubject.create().toSerialized();
     }
 
     public static RxBus getInstance() {
-        return RxbusHolder.rxBus;
-    }
-
-    private static class RxbusHolder {
-        private static final RxBus rxBus = new RxBus();
-    }
-
-    public void send(Object tag, Object object) {
-        List<Subject> subjects = rxMap.get(tag);
-        if (subjects != null && !subjects.isEmpty()) {
-            for (Subject s : subjects) {
-                //noinspection unchecked
-                s.onNext(object);
+        if (instance == null) {
+            synchronized (RxBus.class) {
+                if (instance == null) {
+                    instance = new RxBus();
+                }
             }
         }
+        return instance;
     }
 
-    public void send(Object tag) {
-        List<Subject> subjects = rxMap.get(tag);
-        if (subjects != null && !subjects.isEmpty()) {
-            for (Subject s : subjects) {
-                //noinspection unchecked
-                s.onNext(tag);
+    /**
+     * 之所以用抽象类而不用接口,是因为在获取泛型类型(getGenericSuperclass()方法)时,只能从类上获取,而接口无法获取
+     * @param <E>
+     */
+    public abstract static class OnReceivedListener<E> {
+        public abstract void onSubscribe(Disposable disposable);
+
+        public abstract void onReceived(E e);
+    }
+
+    /**
+     * 订阅事件
+     * @param onReceivedListener    接收事件的监听器
+     * @param <Event>               事件
+     */
+    public <Event> void subscibe(final OnReceivedListener<Event> onReceivedListener){
+        subscibe(onReceivedListener,false);
+    }
+
+    /**
+     * 订阅事件
+     * @param onReceivedListener    接收事件的监听器
+     * @param isDisposable          是否是一次性订阅(接收消息后立即注销监听)
+     * @param <Event>               事件
+     */
+    public <Event> void subscibe(final OnReceivedListener<Event> onReceivedListener, final boolean isDisposable) {
+        Type genericSuperclass = onReceivedListener.getClass().getGenericSuperclass();
+        ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+        Type type = parameterizedType.getActualTypeArguments()[0];
+        Class<Event> entityClass = (Class<Event>) type;
+
+        toObservable(entityClass).subscribe(new Observer<Event>() {
+            private Disposable disposable;
+
+            @Override
+            public void onSubscribe(Disposable disposable) {
+                this.disposable=disposable;
+                onReceivedListener.onSubscribe(disposable);
             }
-        }
-    }
 
-    public <T> Subscription toSubscription(Object tag, Action1<T> action1) {
-        List<Subject> rxList = rxMap.get(tag);
-        if (rxList == null) {
-            rxList = new ArrayList<>();
-            rxMap.put(tag, rxList);
-        }
-        Subject<T, T> subject = PublishSubject.create();
-        rxList.add(subject);
-        return subject
-                .onBackpressureBuffer()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(action1);
-    }
-
-    public <T> Observable<T> toObserverable(Object tag) {
-        List<Subject> rxList = rxMap.get(tag);
-        if (rxList == null) {
-            rxList = new ArrayList<>();
-            rxMap.put(tag, rxList);
-        }
-        Subject<T, T> subject = PublishSubject.create();
-        rxList.add(subject);
-        return subject;
-    }
-
-    public void unregister(Object tag, Observable observable) {
-        List<Subject> subjects = rxMap.get(tag);
-        if (subjects != null) {
-            subjects.remove(observable);
-            if (subjects.isEmpty()) {
-                rxMap.remove(tag);
+            @Override
+            public void onNext(Event event) {
+                //如果是一次性的事件,则接收事件后立即销毁
+                if(isDisposable){
+                    if(disposable!=null && !disposable.isDisposed()){
+                        disposable.dispose();
+                    }
+                }
+                onReceivedListener.onReceived(event);
             }
+
+            @Override
+            public void onError(Throwable e) {
+                BLog.e("rxbus报错:" + e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+
+    public void post(Object o) {
+        bus.onNext(o);
+    }
+
+    public boolean hasObservable() {
+        return bus.hasObservers();
+    }
+
+    /**
+     * 转换为特定类型的Obserbale
+     */
+    private <T> Observable<T> toObservable(Class<T> type) {
+        return bus.ofType(type);
+    }
+
+    public void dispose(Disposable disposable){
+        if(disposable!=null && !disposable.isDisposed()){
+            disposable.dispose();
         }
     }
 }

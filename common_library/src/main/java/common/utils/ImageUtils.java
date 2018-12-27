@@ -1,7 +1,6 @@
 package common.utils;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -10,6 +9,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+
+import java.io.File;
 
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 
@@ -168,6 +169,12 @@ public class ImageUtils {
 			cursor.close();
 		}
 		return filePath;
+	}
+
+	public static File saveImage2sdcard(){
+
+
+		return null;
 	}
 }
 

@@ -6,7 +6,13 @@ import android.os.Environment;
 import java.io.File;
 import java.math.BigDecimal;
 
+import io.reactivex.ObservableEmitter;
+
 public class DataCleanManager {
+
+    public interface OnGetCacheSizeListener{
+        void onGetCacheSize(String cacheSize);
+    }
 
     /**
      * 获取缓存大小
@@ -15,6 +21,9 @@ public class DataCleanManager {
      * @throws Exception
      */
     public static String getTotalCacheSize(Context context)  {
+        if(context==null){
+            return "0M";
+        }
         long cacheSize = getFolderSize(context.getCacheDir());
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             cacheSize += getFolderSize(context.getExternalCacheDir());
@@ -22,11 +31,47 @@ public class DataCleanManager {
         return getFormatSize(cacheSize);
     }
 
+    public static void getAsyncTotalCacheSize(final Context context, final OnGetCacheSizeListener onGetCacheSizeListener)  {
+        if(context==null){
+            onGetCacheSizeListener.onGetCacheSize("0M");
+            return;
+        }
+
+        RxJavaUtils.createObservable(new RxJavaUtils.RxJavaCallback<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+                long cacheSize = getFolderSize(context.getCacheDir());
+                if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                    cacheSize += getFolderSize(context.getExternalCacheDir());
+                }
+                emitter.onNext(getFormatSize(cacheSize));
+                emitter.onComplete();
+            }
+
+            @Override
+            public void onNext(String s) {
+                onGetCacheSizeListener.onGetCacheSize(s);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                onGetCacheSizeListener.onGetCacheSize("error");
+            }
+        });
+
+
+    }
+
+
+
     /**
      * 清除缓存
      * @param context
      */
     public static void clearAllCache(Context context) {
+        if(context==null){
+            return;
+        }
         deleteDir(context.getCacheDir());
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             deleteDir(context.getExternalCacheDir());
@@ -36,14 +81,14 @@ public class DataCleanManager {
     private static boolean deleteDir(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDir(new File(dir, children[i]));
+            for (String aChildren : children) {
+                boolean success = deleteDir(new File(dir, aChildren));
                 if (!success) {
                     return false;
                 }
             }
         }
-        return dir.delete();
+        return dir != null && dir.delete();
     }
 
     // 获取文件大小
@@ -77,7 +122,7 @@ public class DataCleanManager {
         double kiloByte = size / 1024;
         if (kiloByte < 1) {
 //            return size + "Byte";
-            return "0";
+            return "0M";
         }
 
         double megaByte = kiloByte / 1024;

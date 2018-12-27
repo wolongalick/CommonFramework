@@ -271,11 +271,9 @@ public class BIUtils {
     private static String getAndroidId(Context context) {
         String android_id = null;
         try {
-            if (Build.VERSION.SDK_INT >= 8) {
-                android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-                if (android_id != null) {
-                    android_id = android_id.toLowerCase();
-                }
+            android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            if (android_id != null) {
+                android_id = android_id.toLowerCase();
             }
         } catch (Throwable ex) {
         }

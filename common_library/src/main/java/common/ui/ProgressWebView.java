@@ -16,11 +16,16 @@ public class ProgressWebView extends WebView {
     private OnProgressListener onProgressListener;
     private OnGetTitleListener onGetTitleListener;
 
+    private boolean isDisable;
+
     public ProgressWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
         progressbar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
         progressbar.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, DensityUtils.dp2px(context,3), 0, 0));
         addView(progressbar);
+        if(isDisable){
+            progressbar.setVisibility(GONE);
+        }
         setWebChromeClient(new WebChromeClient());
         setWebViewClient(new WebViewClient(){
             @Override
@@ -46,8 +51,9 @@ public class ProgressWebView extends WebView {
             if (newProgress == 100) {
                 progressbar.setVisibility(GONE);
             } else {
-                if (progressbar.getVisibility() == GONE)
+                if (progressbar.getVisibility() != VISIBLE && !isDisable){
                     progressbar.setVisibility(VISIBLE);
+                }
                 progressbar.setProgress(newProgress);
             }
             if(onProgressListener!=null){
@@ -92,5 +98,9 @@ public class ProgressWebView extends WebView {
 
     public void setOnGetTitleListener(OnGetTitleListener onGetTitleListener) {
         this.onGetTitleListener = onGetTitleListener;
+    }
+
+    public void setDisable(boolean disable) {
+        isDisable = disable;
     }
 }

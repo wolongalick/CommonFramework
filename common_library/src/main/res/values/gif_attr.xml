@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomTheme">
+        <attr name="gifViewStyle" format="reference" />
+    </declare-styleable>
+    <declare-styleable name="GifView">
+        <attr name="gif" format="reference" />
+        <attr name="paused" format="boolean"/>
+        <attr name="minWidth" format="dimension"/><!--最小宽度-->
+        <attr name="maxWidth" format="dimension"/><!--最大宽度-->
+    </declare-styleable>
+
+    <style name="Widget.GifView" parent="@android:style/Widget" />
+</resources>

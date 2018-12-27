@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MM">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="MW">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="WM">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="WW">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="MM.GlobalFrameLayout">
+        <item name="android:id">@id/globalFrameLayout</item>
+        <item name="globalEmptyDataImg">@drawable/empty_data</item>
+    </style>
+
+    <style
+        name="no_border_dialog"
+        parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item><!-- 边框 -->
+        <item name="android:windowIsFloating">true</item><!-- 是否浮现在activity之上 -->
+        <item name="android:windowIsTranslucent">false</item><!-- 半透明 -->
+        <item name="android:windowNoTitle">true</item>  <!-- 无标题 -->
+        <item name="android:windowBackground">@android:color/transparent</item><!-- 背景图片 -->
+        <!--<item name="android:backgroundDimEnabled">false</item>&lt;!&ndash;背景是否需要模糊&ndash;&gt;-->
+    </style>
+</resources>

@@ -13,7 +13,7 @@
 
     <!--置顶色值-->
     <item android:state_selected="true">
-        <color android:color="@color/c10"/>
+        <color android:color="@color/c10" />
     </item>
 
 

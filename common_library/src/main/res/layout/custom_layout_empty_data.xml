@@ -5,30 +5,30 @@
     android:background="@color/common_broundground">
 
     <LinearLayout
+        android:id="@+id/ll_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:layout_gravity="center"
-        android:layout_marginBottom="100dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="100dp"
         >
 
         <ImageView
             android:id="@+id/iv_emptyImg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:src="@drawable/empty_data" />
 
         <TextView
             android:id="@+id/tv_empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_horizontal"
             android:text="暂无数据"
             android:textColor="@color/empty_fail_hint_text_color"
-            android:textSize="15dp" />
+            android:textSize="14dp" />
 
         <TextView
             android:id="@+id/tv_operate"
@@ -36,6 +36,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/net_fail_selector"
             android:gravity="center"
+            android:layout_marginTop="24dp"
             android:text="操作"
             android:textColor="@color/empty_fail_btn_color" />
     </LinearLayout>

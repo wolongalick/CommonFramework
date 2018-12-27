@@ -6,23 +6,23 @@ package common.permission;
 public interface IPermission {
     void requestPermissionGroup(String... permissionNames);
 
-    void requestStorage();
+    void requestStorage(Object...params);
 
-    void requestCamera();
+    void requestCamera(Object...params);
 
-    void requestMicrophone();
+    void requestMicrophone(Object...params);
 
-    void requestPhone();
+    void requestPhone(Object...params);
 
-    void requestLocation();
+    void requestLocation(Object...params);
 
-    void requestContacts();
+    void requestContacts(Object...params);
 
-    void requestCalendar();
+    void requestCalendar(Object...params);
 
-    void requestSMS();
+    void requestSMS(Object...params);
 
-    void requestSenors();
+    void requestSenors(Object...params);
 
     void requestStorage(String hint);
 

@@ -1,15 +1,21 @@
 package common.listdata.api2;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+
 import java.util.List;
 
 import common.base.BaseFragment_v4;
-import common.base.BasicRecyclerAdapter;
 import common.base.IViewControl;
+import common.base.MvpPresenter;
+import common.base.MvpView;
+import common.base.adapter.BasicRecyclerAdapter;
+import common.base.viewholder.BaseViewHolder;
 import common.listdata.impl2.FragmentListHelperImpl2;
 import common.ui.datacontent.SimpleGlobalFrameLayout2;
 import common.utils.LoadDataConfig;
@@ -18,8 +24,8 @@ import common.utils.LoadDataConfig;
 /**
  * Created by cxw on 2016/9/24.
  */
-public abstract class BaseListFragment_v4_2<Model,Holder extends RecyclerView.ViewHolder, Adapter extends BasicRecyclerAdapter<Model,Holder>>
-        extends BaseFragment_v4 implements IViewControl, IViewListHelper2 {
+public abstract class BaseListFragment_v4_2<Model,Holder extends BaseViewHolder, Adapter extends BasicRecyclerAdapter<Model,Holder>,V extends MvpView,P extends MvpPresenter<V>>
+        extends BaseFragment_v4<V,P> implements IViewControl, IViewListHelper2 {
     private IFragmentListHelper2 iFragmentListHelper2 = new FragmentListHelperImpl2<Model,Holder, Adapter>() {
         /**
          * 回调函数:通知client端刷新列表
@@ -128,7 +134,11 @@ public abstract class BaseListFragment_v4_2<Model,Holder extends RecyclerView.Vi
 
         @Override
         public Context getContext() {
-            return BaseListFragment_v4_2.this.getContext();
+            Activity hostActivity = BaseListFragment_v4_2.this.getHostActivity();
+            if(hostActivity!=null){
+                return hostActivity.getApplicationContext();
+            }
+            return null;
         }
     };
 
@@ -152,6 +162,11 @@ public abstract class BaseListFragment_v4_2<Model,Holder extends RecyclerView.Vi
     @Override
     public void updateData(List dataList) {
         iFragmentListHelper2.updateData(dataList);
+    }
+
+    @Override
+    public void updateData(List dataList,boolean isWithoutAnimation) {
+        iFragmentListHelper2.updateData(dataList,isWithoutAnimation);
     }
 
     /**
@@ -290,6 +305,13 @@ public abstract class BaseListFragment_v4_2<Model,Holder extends RecyclerView.Vi
     public SimpleGlobalFrameLayout2 getSimpleGlobalFrameLayout2() {
         return iFragmentListHelper2.getSimpleGlobalFrameLayout2();
     }
+    /**
+     * 获取SmartRefreshLayout
+     * @return
+     */
+    public SmartRefreshLayout getRefreshLayout() {
+        return iFragmentListHelper2.getRefreshLayout();
+    }
 
     /**
      * 获取RecyclerView
@@ -307,4 +329,6 @@ public abstract class BaseListFragment_v4_2<Model,Holder extends RecyclerView.Vi
     public void onClickEmptyBtn() {
 
     }
+
+
 }

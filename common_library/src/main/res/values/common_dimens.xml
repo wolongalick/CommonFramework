@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="size_20">12sp</dimen>
+    <dimen name="size_20">100sp</dimen>
+    <dimen name="topbar_height">44dp</dimen>
+    <dimen name="topbar_spacing">16dp</dimen>
+
 </resources>

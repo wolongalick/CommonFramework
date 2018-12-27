@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -18,10 +17,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.common.R;
+import com.nineoldandroids.animation.ObjectAnimator;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
+import common.annotation.LeftMode;
+import common.annotation.RightType;
 import common.utils.ScreenUtils;
 
 public class Topbar extends FrameLayout implements View.OnClickListener {
@@ -30,11 +29,13 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
     private RelativeLayout rl_title;
     private LinearLayout ll_leftOption;
     private LinearLayout ll_rightOption;
+    private LinearLayout ll_title;
 
     private ImageView iv_left;
     private TextView tv_left;
 
     private TextView tv_title;
+    private ImageView iv_arrow_down;
 
     private ImageView iv_right;
     private TextView tv_right;
@@ -42,69 +43,122 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
     public static final int TOPBAR_TYPE_NONE = 0;
     public static final int TOPBAR_TYPE_IMG = 1;
     public static final int TOPBAR_TYPE_TEXT = 2;
+    public static final int TOPBAR_TYPE_ANIM = 3;
 
-    private static final int TOPBAR_LEFT_MODE_BACK=0;
-    private static final int TOPBAR_LEFT_MODE_MORE=1;
 
-    private static final int DEFAULT_LEFT_TYPE = TOPBAR_TYPE_NONE;
+    public static final int TOPBAR_LEFT_MODE_BACK = 0;
+    public static final int TOPBAR_LEFT_MODE_MORE = 1;
+
+    public static final int DEFAULT_TOPBAR_TEXT_COLOR = R.color.white;
+    public static final int DEFAULT_LEFT_TYPE = TOPBAR_TYPE_NONE;
     private static final int DEFAULT_LEFT_IMAGE = R.drawable.back_white;
 
-    private static final int DEFAULT_RIGHT_TYPE = TOPBAR_TYPE_NONE;
+    private static final int DEFAULT_TITLE_TYPE = TOPBAR_TYPE_TEXT;
+
+    public static final int DEFAULT_RIGHT_TYPE = TOPBAR_TYPE_NONE;
     private static final int DEFAULT_RIGHT_IMAGE = R.drawable.back_white;
 
-    private static final int DEFAULT_TOPBAR_LEFT_MODE=TOPBAR_LEFT_MODE_BACK;
+    private static final int DEFAULT_TOPBAR_LEFT_MODE = TOPBAR_LEFT_MODE_BACK;
 
+    private int topbarTextColor;
     private int leftType;
     private int leftImage;
     private String leftText;
     private int leftMode;
 
     private String titleText;
+    private int titleImage;
+    private int titleType;
 
     private int rightType;
     private int rightImage;
     private String rightText;
 
     private int topbarBg;
-    private boolean isExtendStatusBar;
+    private int statusBarBg;
+    private boolean isExtendStatusBar;      //是否将topbar延伸至状态栏
+    private boolean statusBarAsTopbarBg;    //状态栏是否采用与topbar相同的背景图片
 
     private OnClickTopbarLeftListener onClickTopbarLeftListener;
+    private OnClickTopbarTitleListener onClickTopbarTitleListener;
     private OnClickTopbarRightListener onClickTopbarRightListener;
+    private OnClickBackKeyListener onClickBackKeyListener;
 
-    public interface OnClickTopbarLeftListener{
+    public interface OnClickBackKeyListener{
+        void onClickBackKey();
+    }
+
+    public interface OnClickTopbarLeftListener {
         void onClickTopbarLeft();
     }
 
-    public interface OnClickTopbarRightListener{
+    public interface OnClickTopbarTitleListener {
+        void onClickTopbarTitle();
+    }
+
+    public abstract static class OnOpenCloseTopbarTitleListener implements OnClickTopbarTitleListener {
+        private boolean isOpened;
+
+        @Override
+        public final void onClickTopbarTitle(){
+            if(!isOpened){
+                isOpened=true;
+                onOpen();
+            }else {
+                isOpened=false;
+                onClose();
+            }
+        }
+
+        public abstract void onOpen();
+
+        public abstract void onClose();
+
+        public boolean isOpened() {
+            return isOpened;
+        }
+
+        public void setOpened(boolean opened) {
+            isOpened = opened;
+        }
+    }
+
+    public interface OnClickTopbarRightListener {
         void onClickTopbarRight();
     }
 
-    @IntDef({TOPBAR_TYPE_NONE, TOPBAR_TYPE_IMG, TOPBAR_TYPE_TEXT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface RightType {}
+
 
 
     public Topbar(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        this.context=context;
+        this.context = context;
 
         LayoutInflater.from(context).inflate(R.layout.layout_topbar, this);
 
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.Topbar);
 
-        isExtendStatusBar=array.getBoolean(R.styleable.Topbar_topbarIsExtendStatusBar,false);
-        topbarBg=array.getResourceId(R.styleable.Topbar_topbarBg,context.getResources().getColor(R.color.topbar_background));
 
+
+        isExtendStatusBar = array.getBoolean(R.styleable.Topbar_topbarIsExtendStatusBar, false);
+        statusBarAsTopbarBg = array.getBoolean(R.styleable.Topbar_statusBarAsTopbarBg, false);
+        topbarBg = array.getResourceId(R.styleable.Topbar_topbarBg, context.getResources().getColor(R.color.topbar_background));
+        statusBarBg = array.getResourceId(R.styleable.Topbar_statusBarBg, context.getResources().getColor(R.color.topbar_background));
+
+        topbarTextColor=array.getColor(R.styleable.Topbar_topbarTextColor,context.getResources().getColor(DEFAULT_TOPBAR_TEXT_COLOR));
 
         leftType = array.getInt(R.styleable.Topbar_topbarLeftType, DEFAULT_LEFT_TYPE);
         leftImage = array.getResourceId(R.styleable.Topbar_topbarLeftImage, DEFAULT_LEFT_IMAGE);
         leftText = array.getString(R.styleable.Topbar_topbarLeftText);
-        leftMode=array.getInt(R.styleable.Topbar_topbarLeftMode,DEFAULT_TOPBAR_LEFT_MODE);
+        leftMode = array.getInt(R.styleable.Topbar_topbarLeftMode, DEFAULT_TOPBAR_LEFT_MODE);
 
+        titleType = array.getInt(R.styleable.Topbar_topbarTitleType, DEFAULT_TITLE_TYPE);
+        titleImage = array.getResourceId(R.styleable.Topbar_topbarTitleImage, 0);//默认中间标题栏没有图片
         titleText = array.getString(R.styleable.Topbar_topbarTitleText);
 
+
         rightType = array.getInt(R.styleable.Topbar_topbarRightType, DEFAULT_RIGHT_TYPE);
-        rightImage = array.getResourceId(R.styleable.Topbar_topbarLeftImage, DEFAULT_RIGHT_IMAGE);
+        rightImage = array.getResourceId(R.styleable.Topbar_topbarRightImage, DEFAULT_RIGHT_IMAGE);
         rightText = array.getString(R.styleable.Topbar_topbarRightText);
 
         initViews();
@@ -116,16 +170,18 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
 
     public void initViews() {
         statusBarView = findViewById(R.id.statusBarView);
-        rl_title = (RelativeLayout) findViewById(R.id.rl_title);
-        ll_leftOption = (LinearLayout) findViewById(R.id.ll_leftOption);
-        ll_rightOption = (LinearLayout) findViewById(R.id.ll_rightOption);
+        rl_title = findViewById(R.id.rl_title);
+        ll_leftOption = findViewById(R.id.ll_leftOption);
+        ll_title = findViewById(R.id.ll_title);
+        ll_rightOption = findViewById(R.id.ll_rightOption);
 
-        iv_left = (ImageView) findViewById(R.id.iv_left);
-        iv_right = (ImageView) findViewById(R.id.iv_right);
+        iv_left = findViewById(R.id.iv_left);
+        iv_right = findViewById(R.id.iv_right);
 
-        tv_title = (TextView) findViewById(R.id.tv_title);
-        tv_left = (TextView) findViewById(R.id.tv_left);
-        tv_right = (TextView) findViewById(R.id.tv_right);
+        tv_title = findViewById(R.id.tv_title);
+        iv_arrow_down = findViewById(R.id.iv_arrow_down);
+        tv_left = findViewById(R.id.tv_left);
+        tv_right = findViewById(R.id.tv_right);
 
     }
 
@@ -136,11 +192,17 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
         controlRightWight();
     }
 
-    private void controlStatusBar_titleBar(){
+    private void controlStatusBar_titleBar() {
         if (isExtendStatusBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             //状态栏与标题栏背景融为一体
-            statusBarView.getLayoutParams().height=ScreenUtils.getStatusHeight(context);
-            statusBarView.setBackgroundColor(Color.TRANSPARENT);
+            statusBarView.getLayoutParams().height = ScreenUtils.getStatusHeight(context);
+
+            if(statusBarAsTopbarBg){
+                statusBarView.setBackgroundResource(topbarBg);
+            }else {
+                statusBarView.setBackgroundResource(statusBarBg);
+            }
+
             rl_title.setBackgroundColor(Color.TRANSPARENT);
             setBackgroundResource(topbarBg);
         } else {
@@ -153,7 +215,7 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
         switch (leftType) {
             case TOPBAR_TYPE_IMG:
                 tv_left.setVisibility(GONE);
-                iv_left.setBackgroundResource(leftImage);
+                iv_left.setImageResource(leftImage);
                 break;
             case TOPBAR_TYPE_TEXT:
                 iv_left.setVisibility(GONE);
@@ -165,7 +227,26 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
     }
 
     private void controlTitleWight() {
-        tv_title.setText(titleText);
+        switch (titleType) {
+            case TOPBAR_TYPE_IMG:
+                tv_title.setVisibility(GONE);
+                iv_arrow_down.setVisibility(VISIBLE);
+                iv_arrow_down.setImageResource(titleImage);
+                break;
+            case TOPBAR_TYPE_TEXT:
+                tv_title.setTextColor(topbarTextColor);
+                tv_title.setText(titleText);
+                tv_title.setVisibility(VISIBLE);
+                iv_arrow_down.setVisibility(GONE);
+                break;
+            case TOPBAR_TYPE_ANIM:
+                tv_title.setTextColor(topbarTextColor);
+                tv_title.setText(titleText);
+                tv_title.setVisibility(VISIBLE);
+                iv_arrow_down.setVisibility(VISIBLE);
+
+                break;
+        }
     }
 
 
@@ -174,7 +255,7 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
             case TOPBAR_TYPE_IMG:
                 ll_rightOption.setVisibility(VISIBLE);
                 tv_right.setVisibility(GONE);
-                iv_right.setBackgroundResource(rightImage);
+                iv_right.setImageResource(rightImage);
                 iv_right.setVisibility(VISIBLE);
                 break;
             case TOPBAR_TYPE_TEXT:
@@ -182,6 +263,8 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
                 iv_right.setVisibility(GONE);
                 tv_right.setText(rightText);
                 tv_right.setVisibility(VISIBLE);
+                tv_left.setTextColor(topbarTextColor);
+                tv_right.setTextColor(topbarTextColor);
                 break;
             default:
                 ll_rightOption.setVisibility(GONE);
@@ -189,10 +272,10 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
     }
 
 
-
-    private void setOnClickListeners(){
+    private void setOnClickListeners() {
         iv_left.setOnClickListener(this);
         tv_left.setOnClickListener(this);
+        ll_title.setOnClickListener(this);
         iv_right.setOnClickListener(this);
         tv_right.setOnClickListener(this);
     }
@@ -200,43 +283,80 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if(v==iv_left || v==tv_left){
-            switch (leftMode){
+        if (v == iv_left || v == tv_left) {
+            switch (leftMode) {
                 case TOPBAR_LEFT_MODE_MORE:
-                    if(onClickTopbarLeftListener==null){
+                    if (onClickTopbarLeftListener == null) {
                         throw new NullPointerException("请先给Topbar设置监听:onClickTopbarLeftListener()");
-                    }else {
+                    } else {
                         onClickTopbarLeftListener.onClickTopbarLeft();
                     }
                     break;
                 default:
-                    ((Activity)context).finish();
+                    try {
+                        Activity activity = (Activity) this.context;
+                        if(onClickBackKeyListener!=null){
+                            onClickBackKeyListener.onClickBackKey();
+                        }
+                        activity.finish();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
             }
-        }else if(v==iv_right || v==tv_right){
-            if(onClickTopbarRightListener==null){
+        } else if (v == iv_right || v == tv_right) {
+            if (onClickTopbarRightListener == null) {
                 throw new NullPointerException("请先给Topbar设置监听:setOnClickTopbarRightListener()");
-            }else {
+            } else {
                 onClickTopbarRightListener.onClickTopbarRight();
             }
+        } else if(v==ll_title){
+            switch (titleType){
+                case TOPBAR_TYPE_ANIM:
+                    if(onClickTopbarTitleListener==null){
+                        throw new NullPointerException("请先给Topbar设置监听:setOnClickTopbarTitleListener()");
+                    }else {
+                        onClickTopbarTitleListener.onClickTopbarTitle();
+                    }
+                    break;
+            }
+
         }
     }
+
+    public void openTitleIcon(){
+        ObjectAnimator objectAnimator=ObjectAnimator.ofFloat(iv_arrow_down,"rotation",-180);
+        objectAnimator.setDuration(getResources().getInteger(R.integer.topbar_titile_anim_duration));
+        objectAnimator.start();
+    }
+
+    public void closeTitleIcon(){
+        ObjectAnimator objectAnimator=ObjectAnimator.ofFloat(iv_arrow_down,"rotation",0);
+        objectAnimator.setDuration(getResources().getInteger(R.integer.topbar_titile_anim_duration));
+        objectAnimator.start();
+    }
+
+
 
     /*==========================set方法-begin==========================*/
     public void setOnClickTopbarLeftListener(OnClickTopbarLeftListener onClickTopbarLeftListener) {
         this.onClickTopbarLeftListener = onClickTopbarLeftListener;
     }
 
+    public void setOnClickTopbarTitleListener(OnClickTopbarTitleListener onClickTopbarTitleListener) {
+        this.onClickTopbarTitleListener = onClickTopbarTitleListener;
+    }
+
     public void setOnClickTopbarRightListener(OnClickTopbarRightListener onClickTopbarRightListener) {
         this.onClickTopbarRightListener = onClickTopbarRightListener;
     }
 
-    public void setTitleText(String titleText){
-        this.titleText=titleText;
+    public void setTitleText(String titleText) {
+        this.titleText = titleText;
         tv_title.setText(titleText);
     }
 
-    public void setTopbarBackgroundResourceId(int resid){
-        topbarBg=context.getResources().getColor(resid);
+    public void setTopbarBackgroundResourceId(int resid) {
+        topbarBg = context.getResources().getColor(resid);
         controlStatusBar_titleBar();
     }
 
@@ -268,7 +388,7 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
         return leftMode;
     }
 
-    public void setLeftMode(int leftMode) {
+    public void setLeftMode(@LeftMode int leftMode) {
         this.leftMode = leftMode;
     }
 
@@ -305,8 +425,29 @@ public class Topbar extends FrameLayout implements View.OnClickListener {
         controlRightWight();
     }
 
+    public ImageView getIv_title() {
+        return iv_arrow_down;
+    }
+
+    public ImageView getIv_right() {
+        return iv_right;
+    }
+
     public TextView getTv_right() {
         return tv_right;
     }
+
+    public TextView getTitle() {
+        return tv_title;
+    }
+
+    public ImageView getIv_left() {
+        return iv_left;
+    }
+
+    public void setOnClickBackKeyListener(OnClickBackKeyListener onClickBackKeyListener) {
+        this.onClickBackKeyListener = onClickBackKeyListener;
+    }
+
     /*==========================set方法-end==========================*/
 }

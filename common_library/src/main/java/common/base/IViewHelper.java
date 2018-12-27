@@ -3,11 +3,9 @@ package common.base;
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
-import android.widget.TextView;
-
-import com.handmark.pulltorefresh.library.IPullToRefresh;
 
 import common.ui.Topbar;
+import common.ui.datacontent.GlobalFrameLayout;
 import common.ui.datacontent.IEmptyLayout;
 import common.ui.datacontent.IFailLayout;
 
@@ -47,18 +45,16 @@ public interface IViewHelper extends INoData{
     /**
      * 初始化空页面
      */
-    void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener);
+    GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener);
 
-    void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener, IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener);
+    GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener, IEmptyLayout.OnClickEmptyLayoutListener onClickEmptyLayoutListener);
 
-    void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
+    GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
                                String emptyViewText);
 
-    void initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
+    GlobalFrameLayout initGlobalFrameLayout(IFailLayout.OnClickReloadButtonListener onClickReloadButtonListener,
                                View emptyView);
 
     void setNavigationBarColor(Activity activity, int colorResId);
-
-    void initPtrText(IPullToRefresh iPullToRefresh);
 
 }

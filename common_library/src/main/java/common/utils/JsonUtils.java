@@ -6,14 +6,20 @@ package common.utils;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +33,37 @@ import common.bean.MsMessage;
  * @author 照东 将一个jsonArray类型的字符串转换成list—hashmap
  */
 
-@SuppressWarnings({"rawtypes", "unchecked"})
 public class JsonUtils {
-    private static Gson gson = new Gson();
+    private static Gson gson;
+
+
+    private static Gson getGson() {
+        if (gson == null) {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            TypeAdapter<String> STRING = new TypeAdapter<String>() {
+                public String read(JsonReader reader) throws IOException {
+                    if (reader.peek() == JsonToken.NULL) {
+                        reader.nextNull();
+                        return "";
+                    }
+                    return reader.nextString();
+                }
+
+                public void write(JsonWriter writer, String value) throws IOException {
+                    if (value == null) {
+                        // 在这里处理null改为空字符串
+                        writer.value("");
+                        return;
+                    }
+                    writer.value(value);
+                }
+            };
+            //注册自定义String的适配器
+            gsonBuilder.registerTypeAdapter(String.class, STRING);
+            gson = gsonBuilder.create();
+        }
+        return gson;
+    }
 
     public static Object parseMapIterabletoJSON(Object object) throws JSONException {
         if (object instanceof Map) {
@@ -51,7 +85,7 @@ public class JsonUtils {
     }
 
     public static String parseBean2json(Object obj) {
-        return gson.toJson(obj);
+        return getGson().toJson(obj);
     }
 
     public static boolean isEmptyObject(JSONObject object) {
@@ -128,7 +162,7 @@ public class JsonUtils {
         JsonArray array = new JsonParser().parse(json).getAsJsonArray();
         for (JsonElement element : array) {
             try {
-                list.add(gson.fromJson(element, clazz));
+                list.add(getGson().fromJson(element, clazz));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -137,23 +171,23 @@ public class JsonUtils {
     }
 
     public static <T> List<T> parseMsMessage2List(String json, Class<T> clazz) {
-        return parseJson2List(gson.toJson(gson.fromJson(json, MsMessage.class).getData()), clazz);
+        return parseJson2List(getGson().toJson(getGson().fromJson(json, MsMessage.class).getData()), clazz);
     }
 
     public static <T> T parseJson2Bean(String json, Class<T> clazz) {
-        return gson.fromJson(json, clazz);
+        return getGson().fromJson(json, clazz);
     }
 
     public static <T> T parseRootJson2Bean(String json, Class<T> clazz) throws JSONException {
-        return gson.fromJson(new JSONObject(json).getJSONObject("data").toString(), clazz);
+        return getGson().fromJson(new JSONObject(json).getJSONObject("data").toString(), clazz);
     }
 
     public static <T> T parseRootJson2Bean(String json, Class<T> clazz, String obj_key) throws JSONException {
-        return gson.fromJson(new JSONObject(json).getJSONObject("data").getJSONObject(obj_key).toString(), clazz);
+        return getGson().fromJson(new JSONObject(json).getJSONObject("data").getJSONObject(obj_key).toString(), clazz);
     }
 
     public static <T> T parseJson2Bean(String json, Type type) {
-        return gson.fromJson(json, type);
+        return getGson().fromJson(json, type);
     }
 
     public static String getHint(String rootJson) {
@@ -166,8 +200,12 @@ public class JsonUtils {
     }
 
     public static <W> String parseMap2String(Map<String, W> map) {
-        String jsonStr = gson.toJson(map);
+        String jsonStr = getGson().toJson(map);
         return jsonStr;
+    }
+
+    public static <T> T parseMap2Bean(Map<String, ?> map, Class<T> clazz) {
+        return getGson().fromJson(getGson().toJson(map), clazz);
     }
 
     /**

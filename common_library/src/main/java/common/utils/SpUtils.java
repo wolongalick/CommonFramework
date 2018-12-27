@@ -5,15 +5,11 @@ import android.content.SharedPreferences;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class SpUtils {
     private Context context;
     private static SpUtils spUtils;
-
-    private Object loginInfo;
 
     public SpUtils() {
 
@@ -41,25 +37,32 @@ public class SpUtils {
      * @param object
      */
     public void put(String key, Object object) {
-        SharedPreferences sp = context.getSharedPreferences(CommonConstant.SPKeys.MAIN_SHAREDPREF.name(),
-                Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-
-        if (object instanceof String) {
-            editor.putString(key, (String) object);
-        } else if (object instanceof Integer) {
-            editor.putInt(key, (Integer) object);
-        } else if (object instanceof Boolean) {
-            editor.putBoolean(key, (Boolean) object);
-        } else if (object instanceof Float) {
-            editor.putFloat(key, (Float) object);
-        } else if (object instanceof Long) {
-            editor.putLong(key, (Long) object);
-        } else {
-            editor.putString(key, object.toString());
+        if(object==null){
+            return;
         }
+        try {
+            SharedPreferences sp = context.getSharedPreferences(CommonConstant.SPKeys.MAIN_SHAREDPREF.name(),
+                    Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
 
-        SharedPreferencesCompat.apply(editor);
+            if (object instanceof String) {
+                editor.putString(key, (String) object);
+            } else if (object instanceof Integer) {
+                editor.putInt(key, (Integer) object);
+            } else if (object instanceof Boolean) {
+                editor.putBoolean(key, (Boolean) object);
+            } else if (object instanceof Float) {
+                editor.putFloat(key, (Float) object);
+            } else if (object instanceof Long) {
+                editor.putLong(key, (Long) object);
+            } else {
+                editor.putString(key, object.toString());
+            }
+
+            SharedPreferencesCompat.apply(editor);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -193,4 +196,7 @@ public class SpUtils {
         }
     }
 
+    public boolean isInited(){
+        return context!=null;
+    }
 }

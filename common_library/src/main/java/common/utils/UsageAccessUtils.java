@@ -49,10 +49,7 @@ public class UsageAccessUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             queryUsageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, 0, ts);
         }
-        if (queryUsageStats == null || queryUsageStats.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !(queryUsageStats == null || queryUsageStats.isEmpty());
     }
 
     /**

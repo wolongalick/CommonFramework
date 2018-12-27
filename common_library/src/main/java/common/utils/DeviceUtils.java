@@ -1,8 +1,11 @@
 package common.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.ViewConfiguration;
@@ -14,6 +17,11 @@ import java.util.UUID;
  * Created by cxw on 2016/1/29.
  */
 public class DeviceUtils {
+
+    private static String uuid;
+    private static String imei;
+    private static String androidId;
+
     /**
      * 检查是否有虚拟键盘
      *
@@ -35,6 +43,9 @@ public class DeviceUtils {
      * @return
      */
     public static int getNavigationBarHeight(Context context) {
+        if(!DeviceUtils.checkDeviceHasNavigationBar(context)){
+            return 0;
+        }
         try {
             Resources resources = context.getResources();
             int resourceId = resources.getIdentifier("navigation_bar_height",
@@ -50,6 +61,15 @@ public class DeviceUtils {
 
     //获得独一无二的Psuedo ID
     public static String getUniquePsuedoID() {
+        if(!TextUtils.isEmpty(uuid)){
+            return uuid;
+        }
+        //先从配置文件中获取,如果不存在,再生成
+        uuid = SpUtils.getInstance().get(CommonConstant.SPKeys.UUID.name(), "");
+        if(!TextUtils.isEmpty(uuid)){
+            return uuid;
+        }
+
         String serial = null;
         String m_szDevIDShort = "35" +
                 Build.BOARD.length() % 10 + Build.BRAND.length() % 10 +
@@ -68,13 +88,64 @@ public class DeviceUtils {
 
         try {
             serial = android.os.Build.class.getField("SERIAL").get(null).toString();
-            //API>=9 使用serial号
-            return new UUID(m_szDevIDShort.hashCode(), serial.hashCode()).toString();
         } catch (Exception exception) {
             //serial需要一个初始化
             serial = "serial"; // 随便一个初始化
         }
         //使用硬件信息拼凑出来的15位号码
-        return new UUID(m_szDevIDShort.hashCode(), serial.hashCode()).toString();
+        uuid=new UUID(m_szDevIDShort.hashCode(), serial.hashCode()).toString();
+        //保存到配置文件
+        SpUtils.getInstance().put(CommonConstant.SPKeys.UUID.name(),uuid);
+
+        return uuid;
     }
+
+
+    public static String getImei() {
+        if(!TextUtils.isEmpty(imei)){
+            return imei;
+        }
+
+        imei=SpUtils.getInstance().get(CommonConstant.SPKeys.IMEI.name(),"");
+
+        if(!TextUtils.isEmpty(imei)){
+            return imei;
+        }
+
+        return imei;
+    }
+
+    public static void saveImei(String imei){
+        DeviceUtils.imei=imei;
+        SpUtils.getInstance().put(CommonConstant.SPKeys.IMEI.name(),imei);
+    }
+
+
+
+    @SuppressLint("HardwareIds")
+    public static String getAndroidID(Context context){
+        if(!TextUtils.isEmpty(androidId)){
+            return androidId;
+        }
+
+        androidId=SpUtils.getInstance().get(CommonConstant.SPKeys.ANDROID_ID.name(),"");
+
+        if(!TextUtils.isEmpty(androidId)){
+            return androidId;
+        }
+
+        if(context==null){
+            return "";
+        }
+
+        androidId=Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        if(!TextUtils.isEmpty(androidId)){
+            SpUtils.getInstance().put(CommonConstant.SPKeys.ANDROID_ID.name(),androidId);
+        }
+
+        return androidId;
+    }
+
+
 }

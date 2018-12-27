@@ -18,6 +18,7 @@ public class FailFrameLayout extends FrameLayout implements View.OnClickListener
     private OnClickReloadButtonListener onClickReloadButtonListener;
     private ImageView iv_fail;
     private TextView tv_reload;
+    private View ll_loadFailed;
 
     public FailFrameLayout(Context context) {
         this(context, null);
@@ -36,15 +37,22 @@ public class FailFrameLayout extends FrameLayout implements View.OnClickListener
     private void initView(){
         setId(R.id.dataContent_fail);
         LayoutInflater.from(getContext()).inflate(R.layout.custom_layout_fail, this);
-        iv_fail = (ImageView) findViewById(R.id.iv_fail);
-        tv_reload= (TextView) findViewById(R.id.tv_reload);
+        iv_fail = findViewById(R.id.iv_fail);
+        tv_reload= findViewById(R.id.tv_reload);
+        ll_loadFailed=findViewById(R.id.ll_loadFailed);
         tv_reload.setOnClickListener(this);
+        ll_loadFailed.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.tv_reload) {
+            if (onClickReloadButtonListener != null) {
+                loadingView.setVisibility(VISIBLE);
+                onClickReloadButtonListener.onClick(v);
+            }
+        }else if(i==R.id.ll_loadFailed){
             if (onClickReloadButtonListener != null) {
                 loadingView.setVisibility(VISIBLE);
                 onClickReloadButtonListener.onClick(v);

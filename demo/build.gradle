@@ -3,25 +3,26 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
-            keyAlias ''
-            keyPassword ''
-            storeFile file('D:/acewill.jks')
-            storePassword ''
+            keyAlias 'alick'
+            keyPassword '123123'
+            storeFile file('../alick.jks')
+            storePassword '123123'
         }
     }
 
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "com.acewill.commonframework"
-        minSdkVersion 14
-        targetSdkVersion 23
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
         debug {
+            debuggable true
             minifyEnabled false
             shrinkResources false
             zipAlignEnabled false
@@ -31,23 +32,18 @@ android {
 
         }
         release {
-            // 是否混淆
+            debuggable true
             minifyEnabled false
-            // 是否支持Zip Align
-            zipAlignEnabled true
-            // 是否不加载无用的资源文件
-            shrinkResources true
-            // 混淆文件
+            shrinkResources false
+            zipAlignEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // 签名文件
             signingConfig signingConfigs.config
-
             buildConfigField "boolean","LOG_DEBUG","false"
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':common_library')
 }

@@ -217,7 +217,7 @@ public class FragmentTabHost extends TabHost implements
 
     private void ensureContent() {
         if (mRealTabContent == null) {
-            mRealTabContent = (FrameLayout) findViewById(mContainerId);
+            mRealTabContent = findViewById(mContainerId);
             if (mRealTabContent == null) {
                 throw new IllegalStateException(
                         "No tab content FrameLayout found for id "
@@ -246,7 +246,7 @@ public class FragmentTabHost extends TabHost implements
                 FragmentTransaction ft = mFragmentManager.beginTransaction();
 //				ft.detach(info.fragment);
                 ft.hide(info.fragment);
-                ft.commit();
+                ft.commitAllowingStateLoss();
             }
         }
 
@@ -290,7 +290,7 @@ public class FragmentTabHost extends TabHost implements
         mAttached = true;
         ft = doTabChanged(currentTab, ft);
         if (ft != null) {
-            ft.commit();
+            ft.commitAllowingStateLoss();
             mFragmentManager.executePendingTransactions();
         }
     }
@@ -321,7 +321,7 @@ public class FragmentTabHost extends TabHost implements
         if (mAttached) {
             FragmentTransaction ft = doTabChanged(tabId, null);
             if (ft != null) {
-                ft.commit();
+                ft.commitAllowingStateLoss();
             }
         }
         if (mOnTabChangeListener != null) {

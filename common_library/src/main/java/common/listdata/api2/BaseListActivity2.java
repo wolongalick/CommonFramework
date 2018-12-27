@@ -6,12 +6,16 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+
 import java.util.List;
 
 import common.base.BaseActivity;
-import common.base.BasicRecyclerAdapter;
 import common.base.IViewControl;
-import common.listdata.impl.ViewListHelperImpl;
+import common.base.MvpPresenter;
+import common.base.MvpView;
+import common.base.adapter.BasicRecyclerAdapter;
+import common.base.viewholder.BaseViewHolder;
 import common.listdata.impl2.ActivityListHelperImpl2;
 import common.ui.datacontent.SimpleGlobalFrameLayout2;
 import common.utils.LoadDataConfig;
@@ -19,7 +23,15 @@ import common.utils.LoadDataConfig;
 /**
  * Created by Alick on 2015/10/2.
  */
-public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHolder, Adapter extends BasicRecyclerAdapter<Model,Holder>> extends BaseActivity implements IViewControl, IActivityListHelper2 {
+public abstract class BaseListActivity2
+
+        <Model,
+        Holder extends BaseViewHolder,
+        Adapter extends BasicRecyclerAdapter<Model,Holder>,
+        V extends MvpView,
+        P extends MvpPresenter<V>> extends BaseActivity<V,P>
+
+        implements IViewControl, IActivityListHelper2 {
 
     private IActivityListHelper2 iActivityListHelper2 =new ActivityListHelperImpl2<Model,Holder, Adapter>(){
         /**
@@ -30,8 +42,7 @@ public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHo
             BaseListActivity2.this.onClickEmptyBtn();
         }
 
-        /**
-         * 回调函数:通知client端刷新列表
+        /*
          */
         @Override
         public void onRefresh() {
@@ -125,12 +136,12 @@ public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHo
          */
         @Override
         public <T> T getView(int id, Class<T> clazz) {
-            return BaseListActivity2.this.getView(id,clazz);
+            return (T) BaseListActivity2.this.getView(id,clazz);
         }
 
         @Override
         public Context getContext() {
-            return BaseListActivity2.this.getContext();
+            return BaseListActivity2.this.getApplicationContext();
         }
     };
 
@@ -152,6 +163,11 @@ public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHo
     @Override
     public void updateData(List dataList) {
         iActivityListHelper2.updateData(dataList);
+    }
+
+    @Override
+    public void updateData(List dataList,boolean isWithoutAnimation) {
+        iActivityListHelper2.updateData(dataList,isWithoutAnimation);
     }
 
     /**
@@ -292,6 +308,14 @@ public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHo
     }
 
     /**
+     * 获取SmartRefreshLayout
+     * @return
+     */
+    public SmartRefreshLayout getRefreshLayout() {
+        return iActivityListHelper2.getRefreshLayout();
+    }
+
+    /**
      * 获取RecyclerView
      * @return
      */
@@ -299,7 +323,6 @@ public abstract class BaseListActivity2<Model,Holder extends RecyclerView.ViewHo
     public RecyclerView getRecyclerView() {
         return iActivityListHelper2.getRecyclerView();
     }
-
 
     /**
      * 回调函数,非必须实现:当点击空数据页面的按钮时触发

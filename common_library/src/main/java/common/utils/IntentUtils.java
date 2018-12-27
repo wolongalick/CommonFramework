@@ -146,8 +146,8 @@ public class IntentUtils {
      */
     public static final void gotoCallActivity(Activity activity, String phoneNumber) {
         Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phoneNumber));
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            T.showShort(activity,"请开启拨打电话的权限");
+        if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            T.show(activity.getApplicationContext(),"请开启拨打电话的权限");
             return;
         }
         activity.startActivity(intent);

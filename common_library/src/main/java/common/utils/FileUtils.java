@@ -15,7 +15,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author gyw
@@ -99,7 +102,7 @@ public class FileUtils {
 	}
 
 	public static boolean createFile(File file) {
-		if (!file.exists() || file.isDirectory()) {// 如果文件不存在，或者文件存在，但是是文件夹
+		if (!file.exists()) {// 如果文件不存在，或者是文件夹
 			String parent = file.getParent();
 			File parentFile = new File(parent);// 根据父路径创建文件对象
 			if (!parentFile.exists() || !parentFile.isDirectory()) {
@@ -108,6 +111,8 @@ public class FileUtils {
 			try {
 				file.createNewFile();// 创建文件
 			} catch (Exception e) {
+				BLog.e("创建文件失败:"+e.getMessage());
+				e.printStackTrace();
 				return false;
 			}
 		}
@@ -216,11 +221,13 @@ public class FileUtils {
 		return IMAGE_PATH;
 	}
 
-
-	public static void bytes2File(byte[] bytes,String filePath){
+    public static void bytes2File(byte[] bytes,String filePath){
+        bytes2File(bytes,filePath,false);
+    }
+	public static void bytes2File(byte[] bytes,String filePath,boolean isAppend){
 		FileOutputStream out=null;
 		try {
-			out=new FileOutputStream(filePath);
+			out=new FileOutputStream(filePath,isAppend);
 			out.write(bytes,0,bytes.length);
 			out.flush();
 		} catch (FileNotFoundException e) {
@@ -317,34 +324,35 @@ public class FileUtils {
 	 * @since 2015-9-22下午3:00:15
 	 * @author zhanghebin
 	 */
-	public static void copyfile(File fromFile, File toFile) {
+	public static boolean copyfile(File fromFile, File toFile) {
 		FileInputStream fosfrom = null;
 		FileOutputStream fosto = null;
 		if (!fromFile.exists()) {
-			return;
+			return false;
 		}
 		if (!fromFile.isFile()) {
-			return;
+			return false;
 		}
 		if (!fromFile.canRead()) {
-			return;
+			return false;
 		}
-		if (!toFile.getParentFile().exists()) {
-			toFile.getParentFile().mkdirs();
-		}
-		if (toFile.exists()) {
-			toFile.delete();
-		}
-		try {
-			fosfrom = new FileInputStream(fromFile);
+        try {
+            boolean newFile = createFile(toFile);
+            BLog.i("新建文件是否成功:"+newFile);
+			if(!newFile){
+				return false;
+			}
+            fosfrom = new FileInputStream(fromFile);
 			fosto = new FileOutputStream(toFile);
 			byte bt[] = new byte[1024*3];
 			int c;
 			while ((c = fosfrom.read(bt)) > 0) {
 				fosto.write(bt, 0, c); // 将内容写到新文件当中
 			}
+			return true;
 		} catch (Exception ex) {
 			Log.e("readfile", ex.getMessage());
+			return false;
 		} finally {
 			BLog.i("cxw","关闭流");
 			try {
@@ -407,6 +415,102 @@ public class FileUtils {
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+
+
+	public static void writeFile(String filePath,String content){
+		if(TextUtils.isEmpty(filePath)){
+			return;
+		}
+		writeFile(new File(filePath),content);
+	}
+
+	public static void writeFile(File file,String content){
+		boolean isExists = file.exists();
+		if(!isExists){
+			isExists=createFile(file);
+		}
+		if(isExists){
+			FileOutputStream out=null;
+			try {
+				out=new FileOutputStream(file,true);
+				byte[] bytes = content.getBytes();
+				out.write(bytes,0,bytes.length);
+				out.flush();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if(out!=null){
+					try {
+						out.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * 删除文件前几行
+	 * @param file    	文件
+	 * @param lineNum	前几行
+	 * @return			删除的内容集合
+	 * @throws IOException
+	 */
+	public static List<String> readAndRemoveFirstLines(File file, int lineNum)throws IOException {
+		if(file==null || !file.exists()|| lineNum<=0){
+			return null;
+		}
+		List<String> strList = null;
+		RandomAccessFile raf = null;
+		try {
+			raf = new RandomAccessFile(file, "rw");
+			// Initial write position
+			long writePosition = raf.getFilePointer();
+			for (int i = 0; i < lineNum; i++) {
+				String line = raf.readLine();
+				if (line == null) {
+					break;
+				}
+				//必须转码,否则读取出现乱码
+				line = new String(line.getBytes("ISO-8859-1"),"utf-8");
+				if(strList==null){
+					strList=new ArrayList<String>();
+				}
+				strList.add(line);
+			}
+			// Shift the next lines upwards.
+			long readPosition = raf.getFilePointer();
+
+			byte[] buff = new byte[1024];
+			int n;
+			while (-1 != (n = raf.read(buff))) {
+				raf.seek(writePosition);
+				raf.write(buff, 0, n);
+				readPosition += n;
+				writePosition += n;
+				raf.seek(readPosition);
+			}
+			raf.setLength(writePosition);
+		} catch (IOException e) {
+			BLog.e("readAndRemoveFirstLines error");
+			throw e;
+		} finally {
+			try {
+				if (raf != null) {
+					raf.close();
+				}
+			} catch (IOException e) {
+				BLog.e("close RandomAccessFile error");
+				throw e;
+			}
+		}
+
+		return strList;
 	}
 
 }

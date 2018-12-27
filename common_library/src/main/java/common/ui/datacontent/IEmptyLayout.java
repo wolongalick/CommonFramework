@@ -25,4 +25,6 @@ public interface IEmptyLayout {
     void setEmptyBtnText(String btnText);
 
     void setOnClickEmptyLayoutListener(OnClickEmptyLayoutListener onClickEmptyLayoutListener);
+
+
 }

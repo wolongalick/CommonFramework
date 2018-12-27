@@ -1,37 +1,11 @@
 package common.bean;
 
 public class MsMessage {
-    private String err_cd;
+    private boolean success;
 
-    private String err_desc;
-
-    private String hint;
+    private String messgae;
 
     private Object data;
-
-    public void setErr_cd(String err_cd) {
-        this.err_cd = err_cd;
-    }
-
-    public String getErr_cd() {
-        return this.err_cd;
-    }
-
-    public void setErr_desc(String err_desc) {
-        this.err_desc = err_desc;
-    }
-
-    public String getErr_desc() {
-        return this.err_desc;
-    }
-
-    public void setHint(String hint) {
-        this.hint = hint;
-    }
-
-    public String getHint() {
-        return this.hint;
-    }
 
     public void setData(Object data) {
         this.data = data;
@@ -41,4 +15,19 @@ public class MsMessage {
         return this.data;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessgae() {
+        return messgae;
+    }
+
+    public void setMessgae(String messgae) {
+        this.messgae = messgae;
+    }
 }
